@@ -29,19 +29,39 @@ export class PhotoBannerSlideshow {
         const hasOverlay = s.eyebrow || s.title || s.subtitle || s.cta_text;
         const ctaUrl = s.cta_url || '#shop';
         const ctaText = s.cta_text || 'Shop Collection';
+        const preset = s.preset || 'image';
+        const textAlign = s.text_align || 'left';
+        const overlayColor = s.overlay_color || '#000000';
+        const overlayOpacity = s.overlay_opacity !== undefined ? s.overlay_opacity : 0.35;
+        const minHeightStyle = s.height_vh ? `min-height:${s.height_vh}vh;` : '';
+
+        // Media Element (Image, Video, or Gradient)
+        let mediaHtml = '';
+        if (preset === 'gradient') {
+          mediaHtml = `<div class="pb-slide-img" style="background:${s.gradient_css || 'linear-gradient(135deg, #3B2432 0%, #1A1118 100%)'}; width:100%; height:100%;"></div>`;
+        } else if (preset === 'video' && s.video_url) {
+          mediaHtml = `<video class="pb-slide-img" autoplay muted loop playsinline poster="${s.image_url || ''}"><source src="${s.video_url}" type="video/mp4"></video>`;
+        } else {
+          mediaHtml = `<img class="pb-slide-img" src="${s.image_url || 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=1600'}" alt="${s.title ? s.title.replace(/<[^>]+>/g, '') : 'Loops of Love Banner'}" loading="${i === 0 ? 'eager' : 'lazy'}">`;
+        }
+
+        // Overlay Style
+        const overlayStyle = `background: ${overlayColor}; opacity: ${overlayOpacity};`;
+        const alignmentClass = textAlign === 'center' ? ' text-center' : (textAlign === 'right' ? ' text-right' : '');
+        const fontClass = s.font_size_preset === 'xl' ? ' pb-font-xl' : (s.font_size_preset === 'sm' ? ' pb-font-sm' : '');
 
         return `
-          <div class="pb-slide${i === 0 ? ' active' : ''}" data-i="${i}">
-            <img class="pb-slide-img" src="${s.image_url}" alt="${s.title ? s.title.replace(/<[^>]+>/g, '') : 'Loops of Love Banner'}" loading="${i === 0 ? 'eager' : 'lazy'}">
-            <div class="pb-slide-overlay"></div>
+          <div class="pb-slide${i === 0 ? ' active' : ''}${fontClass}" data-i="${i}" style="${minHeightStyle}">
+            ${mediaHtml}
+            <div class="pb-slide-overlay" style="${overlayStyle}"></div>
             ${hasOverlay ? `
               <div class="pb-slide-content">
                 <div class="wrap">
-                  <div class="pb-slide-inner">
+                  <div class="pb-slide-inner${alignmentClass}">
                     ${s.eyebrow ? `<span class="pb-eyebrow">${s.eyebrow}</span>` : ''}
                     ${s.title ? `<h2 class="pb-title">${s.title}</h2>` : ''}
                     ${s.subtitle ? `<p class="pb-subtitle">${s.subtitle}</p>` : ''}
-                    ${s.cta_text !== false ? `<a href="${ctaUrl}" class="btn btn-gold pb-btn">${ctaText} <span class="arrow">&rarr;</span></a>` : ''}
+                    ${s.cta_text !== false && s.cta_text !== 'false' ? `<a href="${ctaUrl}" class="btn btn-gold pb-btn">${ctaText} <span class="arrow">&rarr;</span></a>` : ''}
                   </div>
                 </div>
               </div>` : ''}

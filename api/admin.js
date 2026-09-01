@@ -39,13 +39,38 @@ module.exports = async (req, res) => {
           }
         }
 
-        if (!imageUrl) return json(400, { error: 'An image is required.' });
+        if (!imageUrl && body.preset !== 'gradient') {
+          return json(400, { error: 'An image or gradient is required.' });
+        }
 
         const id = crypto.randomUUID();
+        const preset = body.preset || 'image';
+        const gradient_css = body.gradient_css || null;
+        const video_url = body.video_url || null;
+        const overlay_color = body.overlay_color || '#000000';
+        const overlay_opacity = parseFloat(body.overlay_opacity) || 0.35;
+        const cta_text = body.cta_text || 'Shop the Collection';
+        const cta_url = body.cta_url || '#shop';
+        const height_vh = parseInt(body.height_vh) || 60;
+        const text_align = body.text_align || 'left';
+        const font_size_preset = body.font_size_preset || 'lg';
+        const animate_on_load = body.animate_on_load !== false;
+
         await pool.query(
-          `INSERT INTO banners (id, eyebrow, title, subtitle, image_url, sort_order, active)
-           VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-          [id, body.eyebrow || '', body.headline || '', body.subtitle || '', imageUrl, parseInt(body.order) || 0, body.status === 'Active']
+          `INSERT INTO banners (
+            id, eyebrow, title, subtitle, image_url, sort_order, active,
+            preset, gradient_css, video_url, overlay_color, overlay_opacity,
+            cta_text, cta_url, height_vh, text_align, font_size_preset, animate_on_load
+          ) VALUES (
+            $1, $2, $3, $4, $5, $6, $7,
+            $8, $9, $10, $11, $12,
+            $13, $14, $15, $16, $17, $18
+          )`,
+          [
+            id, body.eyebrow || '', body.headline || '', body.subtitle || '', imageUrl || '', parseInt(body.order) || 0, body.status === 'Active',
+            preset, gradient_css, video_url, overlay_color, overlay_opacity,
+            cta_text, cta_url, height_vh, text_align, font_size_preset, animate_on_load
+          ]
         );
 
         return json(200, { success: true, id, message: 'Slide saved!' });

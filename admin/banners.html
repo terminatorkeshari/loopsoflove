@@ -8,7 +8,7 @@
 <style>
   .banner-preview-box {
     width: 100%;
-    height: 160px;
+    height: 180px;
     border: 2px dashed var(--admin-border);
     border-radius: var(--radius-md);
     display: flex;
@@ -17,23 +17,67 @@
     overflow: hidden;
     background: #111;
     color: #FFF;
-    margin-top: 8px;
+    margin-top: 10px;
     position: relative;
+    transition: all 0.2s ease;
   }
-  .banner-preview-box img {
+  .banner-preview-img {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    opacity: 0.85;
   }
   .banner-preview-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to right, rgba(0,0,0,0.7), transparent);
     padding: 20px;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    z-index: 2;
+    transition: all 0.2s ease;
+  }
+  .preset-tabs {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+  .preset-tab-btn {
+    padding: 8px 4px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--admin-border);
+    background: #FFFFFF;
+    color: var(--admin-text-main);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s ease;
+  }
+  .preset-tab-btn.active {
+    background: var(--admin-primary);
+    color: #FFFFFF;
+    border-color: var(--admin-primary);
+  }
+  .gradient-preset-pills {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+  .gradient-pill {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid #CBD5E1;
+    background: #FFF;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  .gradient-pill:hover {
+    background: #F1F5F9;
   }
 </style>
 </head>
@@ -63,19 +107,19 @@
   <main class="admin-main">
     <div class="admin-topbar">
       <div class="admin-topbar-left">
-        <h1>Storefront Hero Banners</h1>
-        <p class="admin-topbar-subtitle">Manage rotating full-screen hero slides, promotional messaging, and call-to-action buttons.</p>
+        <h1>Hero Slides & Visual Presets</h1>
+        <p class="admin-topbar-subtitle">Configure rotating hero banners, video backgrounds, gradient ambient styles, and CTA buttons.</p>
       </div>
       <div class="admin-topbar-actions">
-        <button class="btn btn-gold" id="new-slide-btn">✨ + Add New Slide</button>
+        <button class="btn btn-gold" id="new-slide-btn">✨ + Create Hero Slide</button>
       </div>
     </div>
 
     <div class="panel">
       <div class="panel-header">
         <div>
-          <h2>Hero Slides in Rotation</h2>
-          <p class="panel-desc" style="margin-bottom:0;">Slides display on the homepage in sequence (Order 0 first). Touch swipe and autoplay are enabled.</p>
+          <h2>Active Hero Slides in Rotation</h2>
+          <p class="panel-desc" style="margin-bottom:0;">Slides display in sequence (Order 0 first) on desktop and mobile viewports with touch swipe gestures.</p>
         </div>
       </div>
 
@@ -84,7 +128,9 @@
           <thead>
             <tr>
               <th style="width:140px;">Slide Preview</th>
-              <th>Headline & Content</th>
+              <th>Headline & Style</th>
+              <th>Preset Type</th>
+              <th>CTA Action</th>
               <th>Sort Order</th>
               <th>Status</th>
               <th style="text-align:right;">Actions</th>
@@ -97,55 +143,148 @@
   </main>
 </div>
 
-<!-- Slide Modal -->
+<!-- Slide Creation & Edit Modal -->
 <div class="modal-backdrop" id="modal-backdrop">
-  <div class="modal">
-    <h3 id="modal-title">New Hero Slide</h3>
+  <div class="modal" style="max-width:620px;">
+    <h3 id="modal-title">Create Hero Slide</h3>
     
+    <!-- Preset Type Selector Tabs -->
+    <div class="field">
+      <label>Hero Preset Style</label>
+      <div class="preset-tabs">
+        <button type="button" class="preset-tab-btn active" data-preset="image">🖼️ Photo</button>
+        <button type="button" class="preset-tab-btn" data-preset="gradient">🎨 Gradient</button>
+        <button type="button" class="preset-tab-btn" data-preset="video">🎥 Video Loop</button>
+        <button type="button" class="preset-tab-btn" data-preset="split">🌓 Split Hero</button>
+      </div>
+      <input type="hidden" id="b-preset" value="image">
+    </div>
+
     <div class="field">
       <label>Eyebrow Tag (Optional)</label>
-      <input type="text" id="eyebrow" placeholder="e.g. 100% Handcrafted Luxury">
+      <input type="text" id="eyebrow" placeholder="e.g. 🌸 100% Handcrafted Luxury">
     </div>
     
     <div class="field">
-      <label>Main Headline (Required)</label>
-      <input type="text" id="headline" placeholder="e.g. Crafted With Pure <em>Love & Yarn</em>">
+      <label>Main Headline (Required — HTML &lt;em&gt; supported)</label>
+      <input type="text" id="headline" placeholder="Crafted With Pure <em>Love & Yarn</em>" required>
     </div>
     
     <div class="field">
-      <label>Subheadline / Tagline</label>
-      <textarea id="subtitle" rows="2" placeholder="e.g. Bespoke crochet flowers, charms, and customizable gift hampers."></textarea>
+      <label>Subheadline / Description</label>
+      <textarea id="subtitle" rows="2" placeholder="Bespoke everlasting crochet bouquets, silk accessories, and personalized hampers."></textarea>
     </div>
 
+    <!-- Call to Action Button Settings -->
     <div class="form-grid">
       <div class="field">
-        <label>Display Order (0 = First)</label>
-        <input type="number" id="order" value="0" step="1">
+        <label>CTA Button Text</label>
+        <input type="text" id="cta_text" value="Shop the Collection" placeholder="Shop the Collection">
       </div>
-      
       <div class="field">
-        <label>Rotation Status</label>
-        <select id="status">
-          <option value="Active">Active (In Live Rotation)</option>
-          <option value="Draft">Draft (Hidden)</option>
-        </select>
+        <label>CTA Button Target URL</label>
+        <input type="text" id="cta_url" value="#shop" placeholder="#shop or product.html?id=...">
       </div>
     </div>
 
-    <div class="field" style="margin-top:10px;">
-      <label>Banner Image (Direct URL or Upload)</label>
+    <!-- Layout & Typography Alignment -->
+    <div class="form-grid">
+      <div class="field">
+        <label>Text Alignment</label>
+        <select id="text_align">
+          <option value="left">Left Aligned</option>
+          <option value="center">Centered</option>
+          <option value="right">Right Aligned</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Banner Height</label>
+        <select id="height_vh">
+          <option value="50">Compact (50vh)</option>
+          <option value="60" selected>Standard (60vh)</option>
+          <option value="75">Immersive (75vh)</option>
+          <option value="90">Grand (90vh)</option>
+          <option value="100">Fullscreen (100vh)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Headline Font Sizing</label>
+        <select id="font_size_preset">
+          <option value="sm">Compact (sm)</option>
+          <option value="md">Medium (md)</option>
+          <option value="lg" selected>Large Editorial (lg)</option>
+          <option value="xl">Grand Display (xl)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Display Order & Status</label>
+        <div style="display:flex; gap:8px;">
+          <input type="number" id="order" value="0" step="1" style="width:70px;" title="Order (0 = first)">
+          <select id="status" style="flex:1;">
+            <option value="Active">Active (In Rotation)</option>
+            <option value="Draft">Draft (Hidden)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Conditional Preset Fields: Photo Upload / Image URL -->
+    <div class="field" id="image-preset-group">
+      <label>Background Image (Direct URL or Upload)</label>
       <input type="url" id="slide_image_url" placeholder="https://images.unsplash.com/photo-...">
       <div style="font-size:11.5px; color:var(--admin-text-muted); margin-top:4px;">Or choose a local photo:</div>
       <input type="file" id="slide_image_file" accept="image/*" style="margin-top:4px; font-size:12px; padding:6px;">
-      
+    </div>
+
+    <!-- Conditional Preset Fields: Gradient CSS -->
+    <div class="field" id="gradient-preset-group" style="display:none;">
+      <label>CSS Gradient Rule</label>
+      <input type="text" id="gradient_css" placeholder="linear-gradient(135deg, #3B2432 0%, #1A1118 100%)">
+      <div class="gradient-preset-pills">
+        <button type="button" class="gradient-pill" data-grad="linear-gradient(135deg, #3B2432 0%, #1A1118 100%)">Espresso Velvet</button>
+        <button type="button" class="gradient-pill" data-grad="linear-gradient(135deg, #7E22CE 0%, #3B2432 100%)">Rose Velvet</button>
+        <button type="button" class="gradient-pill" data-grad="linear-gradient(135deg, #C6A15B 0%, #4D3E27 100%)">Golden Hour</button>
+        <button type="button" class="gradient-pill" data-grad="linear-gradient(135deg, #1E293B 0%, #0F172A 100%)">Midnight Silk</button>
+      </div>
+    </div>
+
+    <!-- Conditional Preset Fields: Background Video -->
+    <div class="field" id="video-preset-group" style="display:none;">
+      <label>Background Video URL (MP4 / WebM Direct Stream)</label>
+      <input type="url" id="video_url" placeholder="https://assets.mixkit.co/videos/preview/mixkit-artisan-crafting-...">
+    </div>
+
+    <!-- Overlay & Contrast Controls -->
+    <div class="form-grid" style="margin-top:10px;">
+      <div class="field">
+        <label>Overlay Tint Color</label>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <input type="color" id="overlay_color" value="#000000" style="width:40px; height:38px; padding:2px; cursor:pointer;">
+          <input type="text" id="overlay_color_text" value="#000000" style="flex:1;">
+        </div>
+      </div>
+      <div class="field">
+        <label>Overlay Opacity (<span id="opacity-val">0.35</span>)</label>
+        <input type="range" id="overlay_opacity" min="0" max="0.9" step="0.05" value="0.35" style="margin-top:8px;">
+      </div>
+    </div>
+
+    <!-- Real-Time Live Visual Simulator -->
+    <div class="field" style="margin-top:10px;">
+      <label>Live Visual Overlay Simulator</label>
       <div class="banner-preview-box" id="banner-preview">
-        <div id="banner-placeholder" style="font-size:12px; color:#888;">Select an image to preview slide overlay</div>
-        <img id="banner-img" style="display:none;" alt="Slide preview">
+        <img id="banner-img" class="banner-preview-img" style="display:none;" alt="Slide preview">
+        <div class="banner-preview-overlay" id="preview-overlay">
+          <div id="prev-eyebrow" style="font-size:10.5px; font-weight:700; color:var(--admin-gold); text-transform:uppercase; margin-bottom:4px;">100% Handcrafted</div>
+          <div id="prev-title" style="font-size:16px; font-weight:700; color:#FFFFFF; margin-bottom:4px; line-height:1.2;">Crafted With Pure Love</div>
+          <div id="prev-subtitle" style="font-size:11px; color:rgba(255,255,255,0.85); margin-bottom:8px;">Bespoke crochet blooms and luxury gifts.</div>
+          <div><span id="prev-btn" class="btn btn-gold btn-sm" style="font-size:11px; padding:4px 10px; pointer-events:none;">Shop Collection &rarr;</span></div>
+        </div>
       </div>
     </div>
     
     <div class="form-actions">
-      <button class="btn btn-gold" id="save-btn">Save Slide</button>
+      <button class="btn btn-gold" id="save-btn">Save Slide Configuration</button>
       <button class="btn btn-secondary" id="cancel-btn">Cancel</button>
     </div>
   </div>
@@ -157,39 +296,135 @@ import { requireAdmin, renderSidebar, api, toast } from './assets/js/admin.js';
 let allBanners = [];
 const backdrop = document.getElementById('modal-backdrop');
 const bannerImg = document.getElementById('banner-img');
-const bannerPlaceholder = document.getElementById('banner-placeholder');
+const bannerBox = document.getElementById('banner-preview');
+const previewOverlay = document.getElementById('preview-overlay');
+
+const presetInput = document.getElementById('b-preset');
 const urlInput = document.getElementById('slide_image_url');
 const fileInput = document.getElementById('slide_image_file');
+const gradInput = document.getElementById('gradient_css');
+const videoInput = document.getElementById('video_url');
 
-function updateSlidePreview(src) {
-  if (src) {
-    bannerImg.src = src;
-    bannerImg.style.display = 'block';
-    bannerPlaceholder.style.display = 'none';
-  } else {
+const eyebrowInput = document.getElementById('eyebrow');
+const headlineInput = document.getElementById('headline');
+const subtitleInput = document.getElementById('subtitle');
+const ctaTextInput = document.getElementById('cta_text');
+const textAlignInput = document.getElementById('text_align');
+const overlayColorInput = document.getElementById('overlay_color');
+const overlayColorText = document.getElementById('overlay_color_text');
+const overlayOpacityInput = document.getElementById('overlay_opacity');
+
+// Live Simulator Synchronization
+function refreshSimulator() {
+  const preset = presetInput.value;
+  const overlayColor = overlayColorInput.value;
+  const overlayOpacity = overlayOpacityInput.value;
+  document.getElementById('opacity-val').textContent = overlayOpacity;
+
+  // Background Mode
+  if (preset === 'gradient') {
     bannerImg.style.display = 'none';
-    bannerPlaceholder.style.display = 'block';
+    bannerBox.style.background = gradInput.value || 'linear-gradient(135deg, #3B2432 0%, #1A1118 100%)';
+  } else {
+    bannerBox.style.background = '#111';
+    if (bannerImg.src && bannerImg.src !== window.location.href) {
+      bannerImg.style.display = 'block';
+    }
   }
+
+  // Overlay Styling
+  previewOverlay.style.background = `rgba(${hexToRgb(overlayColor)}, ${overlayOpacity})`;
+  previewOverlay.style.textAlign = textAlignInput.value;
+
+  // Text Content
+  document.getElementById('prev-eyebrow').textContent = eyebrowInput.value || 'PROMOTIONAL BANNER';
+  document.getElementById('prev-title').innerHTML = headlineInput.value || 'Hero Slide Headline';
+  document.getElementById('prev-subtitle').textContent = subtitleInput.value || 'Subheadline & description text';
+  document.getElementById('prev-btn').textContent = (ctaTextInput.value || 'Shop Collection') + ' →';
 }
 
-urlInput.addEventListener('input', () => updateSlidePreview(urlInput.value.trim()));
+function hexToRgb(hex) {
+  let c = hex.replace('#', '');
+  if (c.length === 3) c = c.split('').map(x => x + x).join('');
+  const num = parseInt(c, 16);
+  return `${(num >> 16) & 255}, ${(num >> 8) & 255}, ${num & 255}`;
+}
+
+// Preset Tab Switching
+document.querySelectorAll('.preset-tab-btn').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('.preset-tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const p = btn.dataset.preset;
+    presetInput.value = p;
+
+    document.getElementById('image-preset-group').style.display = (p === 'image' || p === 'split') ? 'block' : 'none';
+    document.getElementById('gradient-preset-group').style.display = (p === 'gradient') ? 'block' : 'none';
+    document.getElementById('video-preset-group').style.display = (p === 'video') ? 'block' : 'none';
+
+    refreshSimulator();
+  };
+});
+
+// Gradient Preset Buttons
+document.querySelectorAll('.gradient-pill').forEach(pill => {
+  pill.onclick = () => {
+    gradInput.value = pill.dataset.grad;
+    refreshSimulator();
+  };
+});
+
+// Input Listeners for Live Update
+[eyebrowInput, headlineInput, subtitleInput, ctaTextInput, textAlignInput, gradInput, videoInput].forEach(el => {
+  el.addEventListener('input', refreshSimulator);
+});
+
+overlayColorInput.addEventListener('input', () => {
+  overlayColorText.value = overlayColorInput.value;
+  refreshSimulator();
+});
+
+overlayColorText.addEventListener('input', () => {
+  if (/^#[0-9A-F]{6}$/i.test(overlayColorText.value)) {
+    overlayColorInput.value = overlayColorText.value;
+    refreshSimulator();
+  }
+});
+
+overlayOpacityInput.addEventListener('input', refreshSimulator);
+
+urlInput.addEventListener('input', () => {
+  bannerImg.src = urlInput.value.trim();
+  refreshSimulator();
+});
+
 fileInput.addEventListener('change', () => {
   if (fileInput.files && fileInput.files[0]) {
     const reader = new FileReader();
-    reader.onload = (e) => updateSlidePreview(e.target.result);
+    reader.onload = (e) => {
+      bannerImg.src = e.target.result;
+      refreshSimulator();
+    };
     reader.readAsDataURL(fileInput.files[0]);
   }
 });
 
 document.getElementById('new-slide-btn').onclick = () => {
-  document.getElementById('eyebrow').value = '';
-  document.getElementById('headline').value = '';
-  document.getElementById('subtitle').value = '';
+  document.getElementById('modal-title').textContent = 'Create Hero Slide';
+  eyebrowInput.value = '';
+  headlineInput.value = '';
+  subtitleInput.value = '';
+  ctaTextInput.value = 'Shop the Collection';
+  document.getElementById('cta_url').value = '#shop';
   urlInput.value = '';
   fileInput.value = '';
-  updateSlidePreview('');
+  gradInput.value = 'linear-gradient(135deg, #3B2432 0%, #1A1118 100%)';
+  videoInput.value = '';
+  bannerImg.src = '';
   document.getElementById('order').value = '0';
   document.getElementById('status').value = 'Active';
+  document.querySelector('.preset-tab-btn[data-preset="image"]').click();
+  refreshSimulator();
   backdrop.classList.add('show');
 };
 
@@ -214,26 +449,36 @@ async function loadBanners() {
     
     if (allBanners.length === 0) {
       document.getElementById('banners-body').innerHTML = `
-        <tr><td colspan="5" style="text-align:center; padding:40px; color:var(--admin-text-muted);">No hero slides yet. Add one above!</td></tr>`;
+        <tr><td colspan="7" style="text-align:center; padding:40px; color:var(--admin-text-muted);">No hero slides yet. Add one above!</td></tr>`;
       return;
     }
 
-    document.getElementById('banners-body').innerHTML = allBanners.map(b => `
-      <tr>
-        <td>
-          <img style="width:130px; height:65px; object-fit:cover; border-radius:var(--radius-sm); border:1px solid var(--admin-border);" src="${b.image_url || ''}" alt="Banner">
-        </td>
-        <td>
-          <div style="font-size:11px; font-weight:700; color:var(--admin-gold); text-transform:uppercase;">${b.eyebrow || 'PROMOTIONAL BANNER'}</div>
-          <div style="font-weight:700; color:var(--admin-text-main); font-size:14px; margin:2px 0;">${(b.title || 'Loops of Love').replace(/<[^>]+>/g, '')}</div>
-          <div style="font-size:12px; color:var(--admin-text-muted);">${b.subtitle || '—'}</div>
-        </td>
-        <td><strong>#${b.sort_order || 0}</strong></td>
-        <td>${b.active ? '<span class="pill pill-green">● In Rotation</span>' : '<span class="pill pill-gray">Draft</span>'}</td>
-        <td style="text-align:right;">
-          <button class="btn btn-danger btn-sm delete-btn" data-id="${b.id}">🗑️ Delete</button>
-        </td>
-      </tr>`).join('');
+    document.getElementById('banners-body').innerHTML = allBanners.map(b => {
+      const presetBadge = `<span class="pill pill-blue">${(b.preset || 'image').toUpperCase()}</span>`;
+      const bgPreview = b.preset === 'gradient' 
+        ? `<div style="width:130px; height:65px; border-radius:var(--radius-sm); background:${b.gradient_css || '#3B2432'}; border:1px solid var(--admin-border);"></div>`
+        : `<img style="width:130px; height:65px; object-fit:cover; border-radius:var(--radius-sm); border:1px solid var(--admin-border);" src="${b.image_url || 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=200'}" alt="Banner">`;
+
+      return `
+        <tr>
+          <td>${bgPreview}</td>
+          <td>
+            <div style="font-size:11px; font-weight:700; color:var(--admin-gold); text-transform:uppercase;">${b.eyebrow || 'PROMOTION'}</div>
+            <div style="font-weight:700; color:var(--admin-text-main); font-size:14px; margin:2px 0;">${(b.title || 'Loops of Love').replace(/<[^>]+>/g, '')}</div>
+            <div style="font-size:12px; color:var(--admin-text-muted);">${b.subtitle || '—'}</div>
+          </td>
+          <td>${presetBadge}</td>
+          <td>
+            <span style="font-size:12px; font-weight:600; color:var(--admin-primary);">${b.cta_text || 'Shop'}</span>
+            <div style="font-size:11px; color:var(--admin-text-muted);">${b.cta_url || '#shop'}</div>
+          </td>
+          <td><strong>#${b.sort_order || 0}</strong></td>
+          <td>${b.active ? '<span class="pill pill-green">● In Rotation</span>' : '<span class="pill pill-gray">Draft</span>'}</td>
+          <td style="text-align:right;">
+            <button class="btn btn-danger btn-sm delete-btn" data-id="${b.id}">🗑️ Delete</button>
+          </td>
+        </tr>`;
+    }).join('');
 
     document.querySelectorAll('.delete-btn').forEach(btn => {
       btn.onclick = () => deleteSlide(btn.dataset.id);
@@ -245,6 +490,7 @@ async function loadBanners() {
 
 document.getElementById('save-btn').onclick = async () => {
   const saveBtn = document.getElementById('save-btn');
+  const preset = presetInput.value;
   let imageBase64 = null;
   let directUrl = urlInput.value.trim();
 
@@ -258,8 +504,8 @@ document.getElementById('save-btn').onclick = async () => {
     });
   }
 
-  if (!directUrl && !imageBase64) {
-    toast("Please enter an image URL or choose a file!", "error");
+  if (preset !== 'gradient' && !directUrl && !imageBase64) {
+    toast("Please enter an image URL or choose a photo file!", "error");
     return;
   }
 
@@ -268,9 +514,19 @@ document.getElementById('save-btn').onclick = async () => {
 
   try {
     const payload = {
-      eyebrow: document.getElementById('eyebrow').value.trim(),
-      headline: document.getElementById('headline').value.trim(),
-      subtitle: document.getElementById('subtitle').value.trim(),
+      eyebrow: eyebrowInput.value.trim(),
+      headline: headlineInput.value.trim() || 'Loops of Love',
+      subtitle: subtitleInput.value.trim(),
+      preset: preset,
+      gradient_css: gradInput.value.trim() || null,
+      video_url: videoInput.value.trim() || null,
+      overlay_color: overlayColorInput.value,
+      overlay_opacity: parseFloat(overlayOpacityInput.value) || 0.35,
+      cta_text: ctaTextInput.value.trim() || 'Shop the Collection',
+      cta_url: document.getElementById('cta_url').value.trim() || '#shop',
+      height_vh: parseInt(document.getElementById('height_vh').value) || 60,
+      text_align: textAlignInput.value || 'left',
+      font_size_preset: document.getElementById('font_size_preset').value || 'lg',
       image_base64: imageBase64,
       image_url: directUrl || undefined,
       order: parseInt(document.getElementById('order').value) || 0,
@@ -282,13 +538,13 @@ document.getElementById('save-btn').onclick = async () => {
       body: JSON.stringify(payload)
     });
 
-    toast("Hero slide saved successfully ✨");
+    toast("Hero slide preset saved successfully ✨");
     backdrop.classList.remove('show');
     await loadBanners();
   } catch (err) {
     toast("Error: " + err.message, "error");
   } finally {
-    saveBtn.innerText = 'Save Slide';
+    saveBtn.innerText = 'Save Slide Configuration';
     saveBtn.disabled = false;
   }
 };
