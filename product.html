@@ -8,64 +8,119 @@
 </head>
 <body>
 
-<div class="announce-bar" id="announce-bar"></div>
+<div class="announce-bar" id="announce-bar">
+  <span class="announce-text">🌸 100% Handmade with Love · Cash on Delivery Available</span>
+</div>
 
 <header class="site-header">
   <div class="wrap">
+    <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Open Navigation Menu">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
     <a href="index.html" class="logo">Loops of Love<span class="halo-dot">.</span></a>
     <nav class="main-nav">
       <a href="index.html">Home</a>
       <a href="index.html#shop">Shop</a>
-      <a href="index.html#about">About</a>
-      <a href="index.html#contact">Contact</a>
+      <a href="index.html#categories">Categories</a>
+      <a href="index.html#combos">Gift Hampers</a>
+      <a href="index.html#about">Our Story</a>
     </nav>
     <div class="nav-icons">
-      <a href="login.html" aria-label="Account"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.5-7 8-7s8 3 8 7"/></svg></a>
-      <a href="cart.html" aria-label="Cart"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h2l1.5 11h11L20 8H7"/><circle cx="10" cy="20" r="1"/><circle cx="17" cy="20" r="1"/></svg><span class="cart-count" data-cart-count>0</span></a>
+      <a href="login.html" class="nav-icon-btn" title="Account" aria-label="Account"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.5-7 8-7s8 3 8 7"/></svg></a>
+      <a href="cart.html" class="nav-icon-btn" title="Cart" aria-label="Cart"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6h2l1.5 11h11L20 8H7"/><circle cx="10" cy="20" r="1.2"/><circle cx="17" cy="20" r="1.2"/></svg><span class="cart-count" data-cart-count>0</span></a>
     </div>
   </div>
 </header>
 
-<div class="wrap">
+<!-- Mobile Navigation Drawer -->
+<div class="drawer-backdrop" id="drawer-backdrop"></div>
+<div class="mobile-drawer" id="mobile-drawer">
+  <div class="drawer-header">
+    <a href="index.html" class="logo">Loops of Love<span class="halo-dot">.</span></a>
+    <button class="drawer-close" id="drawer-close-btn" aria-label="Close menu">&times;</button>
+  </div>
+  <nav class="drawer-nav">
+    <a href="index.html"><span>🏠 Home</span> &rarr;</a>
+    <a href="index.html#shop"><span>✨ All Products</span> &rarr;</a>
+    <a href="index.html#categories"><span>🧶 Categories</span> &rarr;</a>
+    <a href="index.html#combos"><span>🎁 Gift Hampers</span> &rarr;</a>
+    <a href="cart.html"><span>🛍️ View Cart</span> &rarr;</a>
+    <a href="login.html"><span>👤 My Account</span> &rarr;</a>
+  </nav>
+</div>
+
+<div class="wrap" style="padding-top:20px; padding-bottom:60px;">
   <div class="pd-grid" id="pd-root">
-    <div class="pd-media"><img id="pd-image" alt=""></div>
+    <div class="pd-media"><img id="pd-image" alt="" loading="eager"></div>
     <div class="pd-info">
       <span class="eyebrow" id="pd-category"></span>
       <h1 class="pd-name" id="pd-name"></h1>
+      
+      <div class="card-rating" style="margin-bottom:14px; font-size:13px;">
+        <span class="stars" style="color:var(--bronze);">★★★★★</span>
+        <span class="count" style="color:var(--taupe); margin-left:4px;">4.9 (42 reviews) · 100% Handcrafted</span>
+      </div>
+
       <div class="pd-price" id="pd-price"></div>
       <p class="pd-desc" id="pd-desc"></p>
 
       <div class="qty-row">
         <div class="qty-box">
-          <button type="button" id="qty-minus">–</button>
-          <input type="text" id="qty-input" value="1" inputmode="numeric">
-          <button type="button" id="qty-plus">+</button>
+          <button type="button" id="qty-minus" aria-label="Decrease quantity">–</button>
+          <input type="text" id="qty-input" value="1" inputmode="numeric" readonly>
+          <button type="button" id="qty-plus" aria-label="Increase quantity">+</button>
         </div>
-        <button class="btn btn-gold" id="add-btn">Add to cart</button>
+        <button class="btn btn-gold" id="add-btn" style="flex:1;">Add to Cart</button>
       </div>
-      <div class="stock-note" id="stock-note"></div>
+
+      <div class="stock-note" id="stock-note" style="margin-bottom:20px;"></div>
+
+      <div style="background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px; display:flex; flex-direction:column; gap:12px; font-size:13px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span>📦</span> <strong>Cash on Delivery Available</strong> across India
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span>✨</span> <strong>Customization available:</strong> Want specific colors or charms? Let us know!
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span>🚚</span> Dispatched in 1–2 days · Delivered safely in 2–5 days
+        </div>
+      </div>
     </div>
   </div>
+
   <div class="empty-state" id="pd-empty" style="display:none;">
     <h3>We couldn't find that piece</h3>
-    <p><a href="index.html" style="color:var(--pink-deep);">Back to the collection →</a></p>
+    <p><a href="index.html" style="color:var(--bronze); font-weight:600;">Back to the collection →</a></p>
   </div>
 </div>
 
 <footer class="site-footer">
   <div class="wrap">
-    <div>© <span id="year"></span> Loops of Love. All rights reserved.</div>
-    <div>Questions? Reach us any time — we reply personally.</div>
+    <div>
+      <a href="index.html" class="logo" style="color:var(--white); margin-bottom:10px; display:inline-block;">Loops of Love<span class="halo-dot">.</span></a>
+      <div>© <span id="year"></span> Loops of Love. All rights reserved.</div>
+    </div>
+    <div>Questions or custom orders? <a href="#" id="footer-whatsapp" style="color:var(--rose-accent); font-weight:600;">Chat on WhatsApp &rarr;</a></div>
   </div>
 </footer>
 
 <script type="module">
-import { fetchProduct, effectivePrice, formatPrice, addToCart, toast, renderBlockNotice, renderAnnouncementBar } from './assets/js/app.js';
+import { fetchProduct, effectivePrice, formatPrice, addToCart, toast, renderBlockNotice, renderAnnouncementBar, fetchSettings, initMobileMenu, initWhatsAppWidget } from './assets/js/app.js';
 
 renderAnnouncementBar();
-
 document.getElementById('year').textContent = new Date().getFullYear();
 renderBlockNotice();
+initMobileMenu();
+
+async function setupWhatsapp() {
+  const settings = await fetchSettings();
+  const num = (settings?.whatsapp_number || '919876543210').replace(/\D/g, '');
+  const link = document.getElementById('footer-whatsapp');
+  if (link) link.href = `https://wa.me/${num}?text=${encodeURIComponent('Hi Loops of Love! I have a question about this product.')}`;
+  initWhatsAppWidget(num);
+}
+setupWhatsapp();
 
 const params = new URLSearchParams(location.search);
 const id = params.get('id');
@@ -89,13 +144,13 @@ function showEmpty() {
 function render(p) {
   document.title = `${p.name} — Loops of Love`;
   document.getElementById('pd-image').src = p.image_url || 'https://images.unsplash.com/photo-1611652022419-a9419f74343d?q=80&w=800&auto=format&fit=crop';
-  document.getElementById('pd-category').textContent = p.category || 'Loops of Love';
+  document.getElementById('pd-category').textContent = p.category || 'Handmade Creation';
   document.getElementById('pd-name').textContent = p.name;
   document.getElementById('pd-desc').textContent = p.description || '';
 
   const price = effectivePrice(p);
   document.getElementById('pd-price').innerHTML = p.discount_percent > 0
-    ? `${formatPrice(price)} <span class="price-strike">${formatPrice(p.price)}</span>`
+    ? `${formatPrice(price)} <span class="price-strike">${formatPrice(p.price)}</span> <span class="badge-sale" style="position:static; margin-left:8px;">-${p.discount_percent}% OFF</span>`
     : formatPrice(price);
 
   const stockNote = document.getElementById('stock-note');
@@ -104,12 +159,12 @@ function render(p) {
     stockNote.textContent = 'Currently sold out';
     stockNote.classList.add('stock-low');
     addBtn.disabled = true;
-    addBtn.textContent = 'Sold out';
+    addBtn.textContent = 'Sold Out';
   } else if (p.stock <= 3) {
-    stockNote.textContent = `Only ${p.stock} left`;
+    stockNote.textContent = `Only ${p.stock} piece${p.stock === 1 ? '' : 's'} remaining — order soon!`;
     stockNote.classList.add('stock-low');
   } else {
-    stockNote.textContent = 'In stock, ready to ship';
+    stockNote.textContent = 'In stock, handcrafted & ready to ship.';
   }
 }
 
@@ -126,7 +181,7 @@ document.getElementById('add-btn').onclick = () => {
   if (!currentProduct) return;
   const qty = Math.max(1, parseInt(document.getElementById('qty-input').value || 1));
   addToCart(currentProduct, qty);
-  toast(`Added ${currentProduct.name} to cart`);
+  toast(`Added ${qty} × ${currentProduct.name} to cart ✨`);
 };
 
 load();

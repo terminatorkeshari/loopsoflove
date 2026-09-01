@@ -1,14 +1,18 @@
 /**
- * PhotoBannerSlideshow — full-width, edge-to-edge photo banner.
+ * PhotoBannerSlideshow — full-width, edge-to-edge luxury photo banner.
+ * Supports rich overlays (eyebrow, title, subtitle, CTA button), 
+ * mobile touch swipe gestures, responsive aspect ratios, and auto-play.
  */
 export class PhotoBannerSlideshow {
   constructor(els, slides, options = {}) {
     this.els = els;
     this.slides = slides || [];
-    this.intervalMs = options.intervalMs ?? 4500;
+    this.intervalMs = options.intervalMs ?? 5000;
     this.index = 0;
     this.isPlaying = true;
     this.timer = null;
+    this.touchStartX = 0;
+    this.touchEndX = 0;
 
     if (!this.els?.slidesEl || this.slides.length === 0) return;
 
@@ -21,7 +25,29 @@ export class PhotoBannerSlideshow {
 
   _build() {
     this.els.slidesEl.innerHTML = this.slides
-      .map((s, i) => `<img class="pb-slide${i === 0 ? ' active' : ''}" data-i="${i}" src="${s.image_url}" alt="${s.title || 'Banner'}">`)
+      .map((s, i) => {
+        const hasOverlay = s.eyebrow || s.title || s.subtitle || s.cta_text;
+        const ctaUrl = s.cta_url || '#shop';
+        const ctaText = s.cta_text || 'Shop Collection';
+
+        return `
+          <div class="pb-slide${i === 0 ? ' active' : ''}" data-i="${i}">
+            <img class="pb-slide-img" src="${s.image_url}" alt="${s.title ? s.title.replace(/<[^>]+>/g, '') : 'Loops of Love Banner'}" loading="${i === 0 ? 'eager' : 'lazy'}">
+            <div class="pb-slide-overlay"></div>
+            ${hasOverlay ? `
+              <div class="pb-slide-content">
+                <div class="wrap">
+                  <div class="pb-slide-inner">
+                    ${s.eyebrow ? `<span class="pb-eyebrow">${s.eyebrow}</span>` : ''}
+                    ${s.title ? `<h2 class="pb-title">${s.title}</h2>` : ''}
+                    ${s.subtitle ? `<p class="pb-subtitle">${s.subtitle}</p>` : ''}
+                    ${s.cta_text !== false ? `<a href="${ctaUrl}" class="btn btn-gold pb-btn">${ctaText} <span class="arrow">&rarr;</span></a>` : ''}
+                  </div>
+                </div>
+              </div>` : ''}
+          </div>
+        `;
+      })
       .join('');
 
     if (this.els.dotsEl) {
@@ -53,6 +79,19 @@ export class PhotoBannerSlideshow {
       this.els.playPauseEl.addEventListener('click', () => this._togglePlayPause());
     }
 
+    // Touch / Swipe support for mobile
+    const slidesEl = this.els.slidesEl;
+    slidesEl.addEventListener('touchstart', (e) => {
+      this.touchStartX = e.changedTouches[0].screenX;
+      this._stopTimer();
+    }, { passive: true });
+
+    slidesEl.addEventListener('touchend', (e) => {
+      this.touchEndX = e.changedTouches[0].screenX;
+      this._handleSwipe();
+      if (this.isPlaying) this._startTimer();
+    }, { passive: true });
+
     const root = this.els.slidesEl.closest('.photo-banner');
     if (root) {
       root.tabIndex = 0;
@@ -68,6 +107,16 @@ export class PhotoBannerSlideshow {
       root.addEventListener('mouseleave', () => { if (this.isPlaying) this._startTimer(); });
       root.addEventListener('focusin', () => this._stopTimer());
       root.addEventListener('focusout', () => { if (this.isPlaying) this._startTimer(); });
+    }
+  }
+
+  _handleSwipe() {
+    const diff = this.touchEndX - this.touchStartX;
+    const threshold = 40; // minimum distance to trigger swipe
+    if (diff > threshold) {
+      this.prev();
+    } else if (diff < -threshold) {
+      this.next();
     }
   }
 

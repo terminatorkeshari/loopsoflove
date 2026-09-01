@@ -6,59 +6,82 @@
 <title>Checkout — Loops of Love</title>
 <link rel="stylesheet" href="assets/css/style.css">
 <style>
-  /* Quick styling for the state dropdown and side-by-side fields */
-  select.form-select { width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: 14px; background: white; color: var(--ink); }
-  .field-row { display: flex; gap: 12px; margin-bottom: 16px; }
+  select.form-select { width: 100%; padding: 12px 16px; border: 1.5px solid var(--line); border-radius: var(--radius-sm); font-family: inherit; font-size: 14.5px; background: white; color: var(--espresso); outline: none; }
+  select.form-select:focus { border-color: var(--espresso); }
+  .field-row { display: flex; gap: 14px; margin-bottom: 18px; }
   .field-row .field { margin-bottom: 0; flex: 1; }
+  @media (max-width: 600px) {
+    .field-row { flex-direction: column; gap: 18px; }
+  }
 </style>
 </head>
 <body>
 
-<div class="announce-bar" id="announce-bar"></div>
+<div class="announce-bar" id="announce-bar">
+  <span class="announce-text">🌸 100% Handmade with Love · Cash on Delivery Available</span>
+</div>
 
 <header class="site-header">
   <div class="wrap">
+    <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Open Navigation Menu">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
     <a href="index.html" class="logo">Loops of Love<span class="halo-dot">.</span></a>
     <nav class="main-nav">
       <a href="index.html">Home</a>
       <a href="index.html#shop">Shop</a>
+      <a href="cart.html">Cart</a>
     </nav>
     <div class="nav-icons">
-      <a href="cart.html" aria-label="Cart"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h2l1.5 11h11L20 8H7"/><circle cx="10" cy="20" r="1"/><circle cx="17" cy="20" r="1"/></svg><span class="cart-count" data-cart-count>0</span></a>
+      <a href="cart.html" class="nav-icon-btn" aria-label="Cart"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6h2l1.5 11h11L20 8H7"/><circle cx="10" cy="20" r="1.2"/><circle cx="17" cy="20" r="1.2"/></svg><span class="cart-count" data-cart-count>0</span></a>
     </div>
   </div>
 </header>
 
-<div class="wrap" style="max-width:640px; padding:60px 28px 100px;">
-  <h1 style="font-size:34px; margin-bottom:6px;">Checkout</h1>
-  <p style="color:rgba(20,19,43,0.55); margin-bottom:30px;">Payment method: <strong>Cash on Delivery</strong></p>
+<!-- Mobile Navigation Drawer -->
+<div class="drawer-backdrop" id="drawer-backdrop"></div>
+<div class="mobile-drawer" id="mobile-drawer">
+  <div class="drawer-header">
+    <a href="index.html" class="logo">Loops of Love<span class="halo-dot">.</span></a>
+    <button class="drawer-close" id="drawer-close-btn" aria-label="Close menu">&times;</button>
+  </div>
+  <nav class="drawer-nav">
+    <a href="index.html"><span>🏠 Home</span> &rarr;</a>
+    <a href="index.html#shop"><span>✨ All Products</span> &rarr;</a>
+    <a href="cart.html"><span>🛍️ View Cart</span> &rarr;</a>
+  </nav>
+</div>
+
+<div class="wrap" style="max-width:680px; padding:40px 24px 80px;">
+  <h1 style="font-size:clamp(26px, 3.5vw, 34px); margin-bottom:6px;">Order Checkout</h1>
+  <p style="color:var(--taupe); margin-bottom:28px; font-size:14.5px;">Payment Method: <strong>Cash on Delivery (Pay upon arrival)</strong></p>
 
   <div id="form-error" class="form-error"></div>
 
   <form id="checkout-form">
     <div class="field">
-      <label>Full name</label>
-      <input type="text" id="c-name" required>
+      <label>Full Name</label>
+      <input type="text" id="c-name" placeholder="Enter your full name" required>
     </div>
     
     <div class="field">
-      <label>Mobile number (10 Digits)</label>
-      <input type="tel" id="c-phone" placeholder="9876543210" maxlength="10" required>
+      <label>Mobile Number (10 Digits for Delivery Updates)</label>
+      <input type="tel" id="c-phone" placeholder="98765 43210" maxlength="10" required>
     </div>
     
     <div class="field" style="margin-top: 24px;">
-      <label>House/Flat No. & Street Name</label>
-      <input type="text" id="c-street" placeholder="123 Main Market Road" required>
+      <label>House / Flat No., Building & Street Address</label>
+      <input type="text" id="c-street" placeholder="e.g. Flat 402, Lotus Towers, 5th Cross Road" required>
     </div>
 
     <div class="field-row">
       <div class="field">
         <label>City / Town</label>
-        <input type="text" id="c-city" placeholder="City" required>
+        <input type="text" id="c-city" placeholder="e.g. Bangalore" required>
       </div>
       <div class="field">
         <label>PIN Code</label>
-        <input type="text" id="c-pincode" placeholder="123456" maxlength="6" required>
+        <input type="text" id="c-pincode" placeholder="e.g. 560001" maxlength="6" required>
       </div>
     </div>
 
@@ -109,33 +132,47 @@
       </select>
     </div>
 
-    <div style="margin:26px 0; padding:18px; background:var(--pink-soft); border-radius:14px;">
-      <div id="order-lines" style="font-family:var(--font-body); font-size:13px;"></div>
-      <div class="summary-row" id="discount-row" style="display:none; color:var(--berry); font-weight:600;">
+    <!-- Order Items Summary Box -->
+    <div style="margin:28px 0; padding:20px; background:var(--rose-soft); border-radius:var(--radius); border:1px solid var(--line);">
+      <div style="font-weight:600; font-size:14px; margin-bottom:12px; color:var(--espresso);">Items in this order:</div>
+      <div id="order-lines" style="font-size:13.5px;"></div>
+      <div class="summary-row" id="discount-row" style="display:none; color:#1E824C; font-weight:600; margin-top:8px;">
         <span>Discount <span id="applied-coupon-label"></span></span><span id="order-discount"></span>
       </div>
-      <div class="summary-row total" style="border-top:1px solid var(--line); margin-top:10px; padding-top:12px;">
-        <span>Total (COD)</span><span id="order-total"></span>
+      <div class="summary-row total" style="border-top:1px solid rgba(59,36,50,0.15); margin-top:12px; padding-top:12px; color:var(--espresso);">
+        <span>Total Payable (COD)</span><span id="order-total"></span>
       </div>
     </div>
 
+    <!-- Coupon Code -->
     <div class="field">
-      <label>Coupon code</label>
-      <div class="coupon-row">
-        <input type="text" id="coupon-input" placeholder="Enter code" style="border:2px solid var(--pink-soft); border-radius:999px; color:var(--ink);">
-        <button type="button" class="btn btn-sm" id="apply-coupon-btn" style="border-radius:999px;">Apply</button>
+      <label>Have a coupon code?</label>
+      <div class="coupon-row" style="display:flex; gap:8px;">
+        <input type="text" id="coupon-input" placeholder="e.g. LOVE10" style="text-transform:uppercase;">
+        <button type="button" class="btn btn-sm btn-secondary" id="apply-coupon-btn">Apply</button>
       </div>
-      <div id="coupon-message" style="font-size:12px; color:var(--berry); display:none;"></div>
+      <div id="coupon-message" style="font-size:12.5px; margin-top:6px; display:none;"></div>
     </div>
 
-    <button class="btn btn-gold btn-block" type="submit" id="place-order-btn">Place order</button>
+    <button class="btn btn-gold btn-block" type="submit" id="place-order-btn" style="padding:14px; font-size:16px; margin-top:10px;">
+      Confirm Order (Cash on Delivery) &rarr;
+    </button>
   </form>
 </div>
 
+<footer class="site-footer">
+  <div class="wrap">
+    <div>© <span id="year"></span> Loops of Love. All rights reserved.</div>
+    <div>100% Secure Checkout · Cash on Delivery Available Pan-India</div>
+  </div>
+</footer>
+
 <script type="module">
-import { fetchProductsByIds, effectivePrice, formatPrice, getCart, clearCart, requireLogin, getCurrentProfile, renderAnnouncementBar, validateCoupon, placeOrder } from './assets/js/app.js';
+import { fetchProductsByIds, effectivePrice, formatPrice, getCart, clearCart, requireLogin, getCurrentProfile, renderAnnouncementBar, validateCoupon, placeOrder, initMobileMenu } from './assets/js/app.js';
 
 renderAnnouncementBar();
+initMobileMenu();
+document.getElementById('year').textContent = new Date().getFullYear();
 
 const errorBox = document.getElementById('form-error');
 function showError(msg) { errorBox.textContent = msg; errorBox.style.display = 'block'; }
@@ -163,7 +200,7 @@ async function init() {
 
   const cart = getCart();
   if (cart.length === 0) {
-    document.getElementById('checkout-form').innerHTML = `<p>Your cart is empty. <a href="index.html" style="color:var(--pink-deep);">Go shopping →</a></p>`;
+    document.getElementById('checkout-form').innerHTML = `<p>Your cart is empty. <a href="index.html" style="color:var(--bronze); font-weight:600;">Go shopping →</a></p>`;
     return;
   }
 
@@ -183,7 +220,7 @@ async function init() {
     const line = price * item.qty;
     subtotal += line;
     cartItems.push({ product_id: p.id, qty: item.qty });
-    return `<div style="display:flex; justify-content:space-between; padding:4px 0;"><span>${p.name} × ${item.qty}</span><span>${formatPrice(line)}</span></div>`;
+    return `<div style="display:flex; justify-content:space-between; padding:5px 0;"><span>${p.name} × ${item.qty}</span><span><strong>${formatPrice(line)}</strong></span></div>`;
   }).join('');
 
   document.getElementById('order-lines').innerHTML = lines;
@@ -205,14 +242,15 @@ document.getElementById('apply-coupon-btn').addEventListener('click', async () =
   if (!data || !data.valid) {
     appliedCoupon = null;
     msg.textContent = (data && data.message) || 'Could not validate that code.';
+    msg.style.color = '#A8071A';
     msg.style.display = 'block';
     renderTotals();
     return;
   }
 
   appliedCoupon = { code: data.code, discount_amount: data.discount_amount };
-  msg.textContent = `"${data.code}" applied — you saved ${formatPrice(data.discount_amount)}!`;
-  msg.style.color = '#216b41';
+  msg.textContent = `"${data.code}" applied — you saved ${formatPrice(data.discount_amount)}! 🎉`;
+  msg.style.color = '#1E824C';
   msg.style.display = 'block';
   renderTotals();
 });
@@ -225,7 +263,6 @@ document.getElementById('checkout-form').addEventListener('submit', async (e) =>
   btn.textContent = 'Placing order…';
 
   try {
-    // Send the perfectly structured data back to our newly updated backend!
     const data = await placeOrder({
       customer_name: document.getElementById('c-name').value.trim(),
       phone: document.getElementById('c-phone').value.trim(),
@@ -241,7 +278,7 @@ document.getElementById('checkout-form').addEventListener('submit', async (e) =>
   } catch (err) {
     showError(err.message || 'Something went wrong placing your order. Please try again.');
     btn.disabled = false;
-    btn.textContent = 'Place order';
+    btn.textContent = 'Confirm Order (Cash on Delivery) →';
   }
 });
 

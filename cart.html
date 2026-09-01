@@ -8,60 +8,95 @@
 </head>
 <body>
 
-<div class="announce-bar" id="announce-bar"></div>
+<div class="announce-bar" id="announce-bar">
+  <span class="announce-text">🌸 100% Handmade with Love · Cash on Delivery Available</span>
+</div>
 
 <header class="site-header">
   <div class="wrap">
+    <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Open Navigation Menu">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
     <a href="index.html" class="logo">Loops of Love<span class="halo-dot">.</span></a>
     <nav class="main-nav">
       <a href="index.html">Home</a>
       <a href="index.html#shop">Shop</a>
-      <a href="index.html#about">About</a>
-      <a href="index.html#contact">Contact</a>
+      <a href="index.html#categories">Categories</a>
+      <a href="index.html#combos">Gift Hampers</a>
+      <a href="index.html#about">Our Story</a>
     </nav>
     <div class="nav-icons">
-      <a href="login.html" aria-label="Account"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.5-7 8-7s8 3 8 7"/></svg></a>
-      <a href="cart.html" aria-label="Cart"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h2l1.5 11h11L20 8H7"/><circle cx="10" cy="20" r="1"/><circle cx="17" cy="20" r="1"/></svg><span class="cart-count" data-cart-count>0</span></a>
+      <a href="login.html" class="nav-icon-btn" title="Account" aria-label="Account"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.5-7 8-7s8 3 8 7"/></svg></a>
+      <a href="cart.html" class="nav-icon-btn" title="Cart" aria-label="Cart"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6h2l1.5 11h11L20 8H7"/><circle cx="10" cy="20" r="1.2"/><circle cx="17" cy="20" r="1.2"/></svg><span class="cart-count" data-cart-count>0</span></a>
     </div>
   </div>
 </header>
 
-<div class="wrap" style="padding:60px 28px 100px;">
-  <h1 style="font-size:38px; margin-bottom:36px;">Your cart</h1>
+<!-- Mobile Navigation Drawer -->
+<div class="drawer-backdrop" id="drawer-backdrop"></div>
+<div class="mobile-drawer" id="mobile-drawer">
+  <div class="drawer-header">
+    <a href="index.html" class="logo">Loops of Love<span class="halo-dot">.</span></a>
+    <button class="drawer-close" id="drawer-close-btn" aria-label="Close menu">&times;</button>
+  </div>
+  <nav class="drawer-nav">
+    <a href="index.html"><span>🏠 Home</span> &rarr;</a>
+    <a href="index.html#shop"><span>✨ All Products</span> &rarr;</a>
+    <a href="index.html#categories"><span>🧶 Categories</span> &rarr;</a>
+    <a href="index.html#combos"><span>🎁 Gift Hampers</span> &rarr;</a>
+    <a href="cart.html" class="active"><span>🛍️ View Cart</span> &rarr;</a>
+    <a href="login.html"><span>👤 My Account</span> &rarr;</a>
+  </nav>
+</div>
+
+<div class="wrap" style="padding:40px 24px 80px;">
+  <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:28px;">
+    <h1 style="font-size:clamp(26px, 3.5vw, 36px);">Your Shopping Cart</h1>
+    <a href="index.html#shop" style="color:var(--bronze); font-size:14px; font-weight:600;">&larr; Continue Shopping</a>
+  </div>
 
   <table class="table" id="cart-table" style="display:none;">
-    <thead><tr><th>Item</th><th>Price</th><th>Qty</th><th>Subtotal</th><th></th></tr></thead>
+    <thead><tr><th>Item</th><th>Price</th><th>Qty</th><th>Subtotal</th><th>Action</th></tr></thead>
     <tbody id="cart-body"></tbody>
   </table>
 
   <div class="summary-box" id="summary-box" style="display:none;">
-    <div class="summary-row total"><span>Total</span><span id="cart-total"></span></div>
-    <a href="checkout.html" class="btn btn-gold btn-block" style="margin-top:16px;">Proceed to checkout</a>
+    <div style="font-size:16px; font-weight:600; margin-bottom:14px; border-bottom:1px solid rgba(255,255,255,0.15); padding-bottom:10px;">Order Summary</div>
+    <div class="summary-row"><span>Payment Method</span><span>Cash on Delivery (COD)</span></div>
+    <div class="summary-row"><span>Shipping</span><span style="color:#A7F3D0;">Free / Standard</span></div>
+    <div class="summary-row total"><span>Total Payable</span><span id="cart-total"></span></div>
+    <a href="checkout.html" class="btn btn-gold btn-block" style="margin-top:20px; background:var(--white); color:var(--espresso);">Proceed to Checkout &rarr;</a>
   </div>
 
-  <div class="empty-state" id="cart-empty" style="display:none;">
+  <div class="empty-state" id="cart-empty" style="display:none; padding:60px 20px;">
     <h3>Your cart is empty</h3>
-    <p><a href="index.html" style="color:var(--pink-deep);">Continue shopping →</a></p>
+    <p style="margin:12px 0 20px;">Explore our lovely handcrafted accessories and find something special.</p>
+    <a href="index.html#shop" class="btn btn-gold">Explore Collection &rarr;</a>
   </div>
 </div>
 
 <footer class="site-footer">
   <div class="wrap">
-    <div>© <span id="year"></span> Loops of Love. All rights reserved.</div>
-    <div>Payment: Cash on Delivery</div>
+    <div>
+      <a href="index.html" class="logo" style="color:var(--white); margin-bottom:10px; display:inline-block;">Loops of Love<span class="halo-dot">.</span></a>
+      <div>© <span id="year"></span> Loops of Love. All rights reserved.</div>
+    </div>
+    <div>Payment: Cash on Delivery (COD) · Fast Pan-India Delivery</div>
   </div>
 </footer>
 
 <script type="module">
-import { fetchProductsByIds, effectivePrice, formatPrice, getCart, setQty, removeFromCart, renderAnnouncementBar } from './assets/js/app.js';
+import { fetchProductsByIds, effectivePrice, formatPrice, getCart, setQty, removeFromCart, renderAnnouncementBar, initMobileMenu } from './assets/js/app.js';
 
 renderAnnouncementBar();
-
+initMobileMenu();
 document.getElementById('year').textContent = new Date().getFullYear();
 
 async function render() {
   const cart = getCart();
   if (cart.length === 0) {
+    document.getElementById('cart-table').style.display = 'none';
+    document.getElementById('summary-box').style.display = 'none';
     document.getElementById('cart-empty').style.display = 'block';
     return;
   }
@@ -79,8 +114,16 @@ async function render() {
     total += subtotal;
     return `
       <tr>
-        <td><div class="line-item"><img src="${p.image_url || ''}" alt=""><span class="name">${p.name}</span></div></td>
-        <td>${formatPrice(price)}</td>
+        <td>
+          <div class="line-item">
+            <img src="${p.image_url || ''}" alt="${p.name}">
+            <div>
+              <span class="name">${p.name}</span>
+              <div style="font-size:12px; color:var(--taupe); margin-top:2px;">${p.category || 'Handcrafted'}</div>
+            </div>
+          </div>
+        </td>
+        <td><strong>${formatPrice(price)}</strong></td>
         <td>
           <div class="qty-box" style="display:inline-flex;">
             <button type="button" data-action="dec" data-id="${p.id}" data-qty="${qty}">–</button>
@@ -88,14 +131,15 @@ async function render() {
             <button type="button" data-action="inc" data-id="${p.id}" data-qty="${qty}" data-stock="${p.stock}">+</button>
           </div>
         </td>
-        <td>${formatPrice(subtotal)}</td>
-        <td><a class="remove-link" data-action="remove" data-id="${p.id}" href="#">Remove</a></td>
+        <td><strong>${formatPrice(subtotal)}</strong></td>
+        <td><a class="remove-link" data-action="remove" data-id="${p.id}" href="#">✕ Remove</a></td>
       </tr>`;
   }).join('');
 
   document.getElementById('cart-body').innerHTML = rows;
   document.getElementById('cart-table').style.display = 'table';
   document.getElementById('summary-box').style.display = 'block';
+  document.getElementById('cart-empty').style.display = 'none';
   document.getElementById('cart-total').textContent = formatPrice(total);
 }
 

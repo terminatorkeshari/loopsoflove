@@ -3,37 +3,60 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Order placed — Loops of Love</title>
+<title>Order Placed — Loops of Love</title>
 <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
 
-<div class="announce-bar" id="announce-bar"></div>
+<div class="announce-bar" id="announce-bar">
+  <span class="announce-text">🌸 100% Handmade with Love · Cash on Delivery Available</span>
+</div>
 
 <header class="site-header">
   <div class="wrap">
+    <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Open Navigation Menu">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
     <a href="index.html" class="logo">Loops of Love<span class="halo-dot">.</span></a>
     <nav class="main-nav"><a href="index.html">Home</a></nav>
     <div class="nav-icons">
-      <a href="cart.html" aria-label="Cart"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h2l1.5 11h11L20 8H7"/><circle cx="10" cy="20" r="1"/><circle cx="17" cy="20" r="1"/></svg><span class="cart-count" data-cart-count>0</span></a>
+      <a href="cart.html" class="nav-icon-btn" aria-label="Cart"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6h2l1.5 11h11L20 8H7"/><circle cx="10" cy="20" r="1.2"/><circle cx="17" cy="20" r="1.2"/></svg><span class="cart-count" data-cart-count>0</span></a>
     </div>
   </div>
 </header>
 
+<!-- Mobile Navigation Drawer -->
+<div class="drawer-backdrop" id="drawer-backdrop"></div>
+<div class="mobile-drawer" id="mobile-drawer">
+  <div class="drawer-header">
+    <a href="index.html" class="logo">Loops of Love<span class="halo-dot">.</span></a>
+    <button class="drawer-close" id="drawer-close-btn" aria-label="Close menu">&times;</button>
+  </div>
+  <nav class="drawer-nav">
+    <a href="index.html"><span>🏠 Home</span> &rarr;</a>
+    <a href="index.html#shop"><span>✨ All Products</span> &rarr;</a>
+    <a href="cart.html"><span>🛍️ View Cart</span> &rarr;</a>
+  </nav>
+</div>
+
 <div class="wrap confirm-wrap">
   <div class="halo-ring">
     <svg viewBox="0 0 140 140" width="140" height="140">
-      <circle cx="70" cy="70" r="64" stroke="#C6A15B" stroke-width="1" stroke-dasharray="2 8" fill="none" opacity="0.6"/>
-      <circle cx="70" cy="70" r="46" fill="#14132B"/>
-      <path d="M52 71 L64 84 L90 56" stroke="#E7D3A6" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="70" cy="70" r="64" stroke="#B8860B" stroke-width="1" stroke-dasharray="3 6" fill="none" opacity="0.6"/>
+      <circle cx="70" cy="70" r="46" fill="#3B2432"/>
+      <path d="M52 71 L64 84 L90 56" stroke="#FFFFFF" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
   </div>
-  <h1>Order placed</h1>
-  <p class="order-no" id="order-no"></p>
-  <p style="max-width:420px; margin:20px auto 34px; color:rgba(20,19,43,0.6);">
-    Thank you — we've received your order and will confirm delivery by phone shortly. Payment is Cash on Delivery.
+  <h1>🎉 Order Confirmed!</h1>
+  <p class="order-no" id="order-no" style="font-size:18px; margin:8px 0 16px; color:var(--bronze); font-weight:700;"></p>
+  <p style="max-width:460px; margin:0 auto 30px; color:rgba(59,36,50,0.8); line-height:1.7; font-size:15px;">
+    Thank you for choosing Loops of Love! We've received your order and are lovingly preparing your handcrafted package. Payment will be collected via <strong>Cash on Delivery (COD)</strong> upon arrival.
   </p>
-  <a href="index.html" class="btn btn-gold">Continue shopping</a>
+
+  <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
+    <a href="index.html" class="btn btn-gold">Continue Shopping &rarr;</a>
+    <a href="#" id="track-whatsapp" class="btn btn-secondary" style="border-color:var(--espresso);">💬 Ask on WhatsApp</a>
+  </div>
 </div>
 
 <footer class="site-footer">
@@ -43,13 +66,25 @@
 </footer>
 
 <script type="module">
-import { renderAnnouncementBar } from './assets/js/app.js';
+import { renderAnnouncementBar, initMobileMenu, fetchSettings, initWhatsAppWidget } from './assets/js/app.js';
 renderAnnouncementBar();
+initMobileMenu();
 
 document.getElementById('year').textContent = new Date().getFullYear();
 const params = new URLSearchParams(location.search);
 const orderNo = params.get('order');
-document.getElementById('order-no').textContent = orderNo ? `Order #${orderNo}` : '';
+document.getElementById('order-no').textContent = orderNo ? `Order #${orderNo}` : 'Order Placed Successfully';
+
+async function setupWhatsapp() {
+  const settings = await fetchSettings();
+  const num = (settings?.whatsapp_number || '919876543210').replace(/\D/g, '');
+  const trackBtn = document.getElementById('track-whatsapp');
+  if (trackBtn) {
+    trackBtn.href = `https://wa.me/${num}?text=${encodeURIComponent(`Hi Loops of Love! I'd like to check updates for my Order #${orderNo || ''}`)}`;
+  }
+  initWhatsAppWidget(num);
+}
+setupWhatsapp();
 </script>
 </body>
 </html>

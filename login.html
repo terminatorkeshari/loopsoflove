@@ -3,61 +3,116 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login — Loops of Love</title>
+<title>Account — Loops of Love</title>
 <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
 
-<div class="announce-bar" id="announce-bar"></div>
+<div class="announce-bar" id="announce-bar">
+  <span class="announce-text">🌸 100% Handmade with Love · Cash on Delivery Available</span>
+</div>
 
 <header class="site-header">
   <div class="wrap">
+    <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Open Navigation Menu">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
     <a href="index.html" class="logo">Loops of Love<span class="halo-dot">.</span></a>
     <nav class="main-nav">
       <a href="index.html">Home</a>
       <a href="index.html#shop">Shop</a>
-      <a href="index.html#about">About</a>
-      <a href="index.html#contact">Contact</a>
+      <a href="cart.html">Cart</a>
     </nav>
     <div class="nav-icons">
-      <a href="login.html" aria-label="Account"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.5-7 8-7s8 3 8 7"/></svg></a>
-      <a href="cart.html" aria-label="Cart"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h2l1.5 11h11L20 8H7"/><circle cx="10" cy="20" r="1"/><circle cx="17" cy="20" r="1"/></svg><span class="cart-count" data-cart-count>0</span></a>
+      <a href="cart.html" class="nav-icon-btn" aria-label="Cart"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6h2l1.5 11h11L20 8H7"/><circle cx="10" cy="20" r="1.2"/><circle cx="17" cy="20" r="1.2"/></svg><span class="cart-count" data-cart-count>0</span></a>
     </div>
   </div>
 </header>
 
-<div class="form-card">
-  <div class="tabs">
-    <button type="button" id="tab-login" class="active">Log in</button>
-    <button type="button" id="tab-signup">Create account</button>
+<!-- Mobile Navigation Drawer -->
+<div class="drawer-backdrop" id="drawer-backdrop"></div>
+<div class="mobile-drawer" id="mobile-drawer">
+  <div class="drawer-header">
+    <a href="index.html" class="logo">Loops of Love<span class="halo-dot">.</span></a>
+    <button class="drawer-close" id="drawer-close-btn" aria-label="Close menu">&times;</button>
   </div>
-
-  <div id="form-error" class="form-error"></div>
-
-  <!-- LOGIN -->
-  <form id="login-form">
-    <h2>Welcome back</h2>
-    <p class="form-sub">Log in to place your order</p>
-    <div class="field"><label>Mobile number</label><input type="tel" id="login-phone" required placeholder="98765 43210"></div>
-    <div class="field"><label>Password</label><input type="password" id="login-password" required></div>
-    <button class="btn btn-gold btn-block" type="submit">Log in</button>
-  </form>
-
-  <!-- SIGNUP -->
-  <form id="signup-form" style="display:none;">
-    <h2>Create your account</h2>
-    <p class="form-sub">Just a moment — then straight to checkout</p>
-    <div class="field"><label>Full name</label><input type="text" id="signup-name" required></div>
-    <div class="field"><label>Mobile number</label><input type="tel" id="signup-phone" required placeholder="98765 43210"></div>
-    <div class="field"><label>Password</label><input type="password" id="signup-password" required minlength="6"></div>
-    <button class="btn btn-gold btn-block" type="submit">Create account</button>
-  </form>
+  <nav class="drawer-nav">
+    <a href="index.html"><span>🏠 Home</span> &rarr;</a>
+    <a href="index.html#shop"><span>✨ All Products</span> &rarr;</a>
+    <a href="cart.html"><span>🛍️ View Cart</span> &rarr;</a>
+  </nav>
 </div>
 
+<div class="wrap" style="padding:40px 20px 80px;">
+  <div class="form-card">
+    <div class="tabs">
+      <button type="button" id="tab-login" class="active">Log In</button>
+      <button type="button" id="tab-signup">Create Account</button>
+    </div>
+
+    <div id="form-error" class="form-error"></div>
+
+    <!-- LOGIN -->
+    <form id="login-form">
+      <h2>Welcome back 🌸</h2>
+      <p class="form-sub">Log in with your phone number to continue</p>
+      <div class="field">
+        <label>Mobile Number</label>
+        <input type="tel" id="login-phone" required placeholder="98765 43210" maxlength="10">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="login-password" required placeholder="••••••••">
+      </div>
+      <button class="btn btn-gold btn-block" type="submit" style="padding:13px; font-size:15px; margin-top:10px;">Log In &rarr;</button>
+    </form>
+
+    <!-- SIGNUP -->
+    <form id="signup-form" style="display:none;">
+      <h2>Create account ✨</h2>
+      <p class="form-sub">Join in seconds and save your delivery details</p>
+      <div class="field">
+        <label>Full Name</label>
+        <input type="text" id="signup-name" required placeholder="Your name">
+      </div>
+      <div class="field">
+        <label>Mobile Number</label>
+        <input type="tel" id="signup-phone" required placeholder="98765 43210" maxlength="10">
+      </div>
+      <div class="field">
+        <label>Set Password</label>
+        <input type="password" id="signup-password" required minlength="6" placeholder="Min 6 characters">
+      </div>
+      <button class="btn btn-gold btn-block" type="submit" style="padding:13px; font-size:15px; margin-top:10px;">Create Account &rarr;</button>
+    </form>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div>
+      <a href="index.html" class="logo" style="color:var(--white); margin-bottom:10px; display:inline-block;">Loops of Love<span class="halo-dot">.</span></a>
+      <div>© <span id="year"></span> Loops of Love. All rights reserved.</div>
+    </div>
+    <div>Need help? <a href="#" id="footer-whatsapp" style="color:var(--rose-accent); font-weight:600;">Chat on WhatsApp &rarr;</a></div>
+  </div>
+</footer>
+
 <script type="module">
-import { signUpCustomer, logInCustomer, renderAnnouncementBar } from './assets/js/app.js';
+import { signUpCustomer, logInCustomer, renderAnnouncementBar, initMobileMenu, fetchSettings, initWhatsAppWidget } from './assets/js/app.js';
 
 renderAnnouncementBar();
+initMobileMenu();
+document.getElementById('year').textContent = new Date().getFullYear();
+
+async function setupWhatsapp() {
+  const settings = await fetchSettings();
+  const num = (settings?.whatsapp_number || '919876543210').replace(/\D/g, '');
+  const link = document.getElementById('footer-whatsapp');
+  if (link) link.href = `https://wa.me/${num}?text=${encodeURIComponent('Hi Loops of Love! I need help with my account.')}`;
+  initWhatsAppWidget(num);
+}
+setupWhatsapp();
 
 const params = new URLSearchParams(location.search);
 const next = params.get('next') || 'checkout.html';
