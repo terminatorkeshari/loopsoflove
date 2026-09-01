@@ -47,9 +47,18 @@
     <a href="cart.html"><span>🛍️ View Cart</span> &rarr;</a>
     <a href="login.html"><span>👤 My Account</span> &rarr;</a>
   </nav>
-</div>
+<div class="wrap" style="padding-top:14px; padding-bottom:60px;">
+  <!-- Breadcrumb Navigation for SEO & UX -->
+  <nav class="breadcrumb-bar" style="margin-bottom:16px; font-size:12px; color:var(--taupe); display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+    <a href="index.html" style="color:var(--espresso); text-decoration:none;">Home</a>
+    <span>/</span>
+    <a href="index.html#shop" style="color:var(--espresso); text-decoration:none;">Shop</a>
+    <span>/</span>
+    <span id="breadcrumb-category" style="color:var(--bronze); font-weight:500;">Collection</span>
+    <span>/</span>
+    <span id="breadcrumb-current" style="color:var(--taupe);">Loading...</span>
+  </nav>
 
-<div class="wrap" style="padding-top:20px; padding-bottom:60px;">
   <div class="pd-grid" id="pd-root">
     <div class="pd-media"><img id="pd-image" alt="" loading="eager"></div>
     <div class="pd-info">
@@ -143,7 +152,16 @@ function showEmpty() {
 
 function render(p) {
   document.title = `${p.name} — Loops of Love`;
-  document.getElementById('pd-image').src = p.image_url || 'https://images.unsplash.com/photo-1611652022419-a9419f74343d?q=80&w=800&auto=format&fit=crop';
+  
+  const bcCat = document.getElementById('breadcrumb-category');
+  const bcCur = document.getElementById('breadcrumb-current');
+  if (bcCat) bcCat.textContent = p.category || 'Accessories';
+  if (bcCur) bcCur.textContent = p.name;
+
+  const imgEl = document.getElementById('pd-image');
+  imgEl.src = p.image_url || 'https://images.unsplash.com/photo-1611652022419-a9419f74343d?q=80&w=800&auto=format&fit=crop';
+  imgEl.alt = p.name;
+  
   document.getElementById('pd-category').textContent = p.category || 'Handmade Creation';
   document.getElementById('pd-name').textContent = p.name;
   document.getElementById('pd-desc').textContent = p.description || '';
@@ -152,6 +170,33 @@ function render(p) {
   document.getElementById('pd-price').innerHTML = p.discount_percent > 0
     ? `${formatPrice(price)} <span class="price-strike">${formatPrice(p.price)}</span> <span class="badge-sale" style="position:static; margin-left:8px;">-${p.discount_percent}% OFF</span>`
     : formatPrice(price);
+
+  // Dynamic Product JSON-LD Structured Data Schema for Google Shopping / Rich Snippets
+  const existingSchema = document.getElementById('product-schema-ld');
+  if (existingSchema) existingSchema.remove();
+  const schemaScript = document.createElement('script');
+  schemaScript.id = 'product-schema-ld';
+  schemaScript.type = 'application/ld+json';
+  schemaScript.textContent = JSON.stringify({
+    "@context": "https://schema.org/",
+    "@type": "Product",
+    "name": p.name,
+    "image": [p.image_url || ""],
+    "description": p.description || p.name,
+    "brand": {
+      "@type": "Brand",
+      "name": "Loops of Love"
+    },
+    "offers": {
+      "@type": "Offer",
+      "url": window.location.href,
+      "priceCurrency": "INR",
+      "price": price,
+      "availability": p.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      "itemCondition": "https://schema.org/NewCondition"
+    }
+  });
+  document.head.appendChild(schemaScript);
 
   const stockNote = document.getElementById('stock-note');
   const addBtn = document.getElementById('add-btn');
