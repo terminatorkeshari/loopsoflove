@@ -281,6 +281,7 @@ import { PhotoBannerSlideshow } from './assets/js/photo-banner.js';
 document.getElementById('year').textContent = new Date().getFullYear();
 renderBlockNotice();
 renderAnnouncementBar();
+initMobileMenu();
 
 async function setupWhatsapp() {
   const settings = await fetchSettings();

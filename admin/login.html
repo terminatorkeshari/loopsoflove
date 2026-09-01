@@ -3,54 +3,105 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Login — Loops of Love</title>
-<link rel="stylesheet" href="../assets/css/style.css">
+<title>Admin Portal Login — Loops of Love</title>
+<link rel="stylesheet" href="assets/admin.css">
+<style>
+  body {
+    background: linear-gradient(135deg, #1A1118 0%, #2B1E28 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .login-card {
+    background: #FFFFFF;
+    width: 100%;
+    max-width: 420px;
+    border-radius: var(--radius-lg);
+    padding: 36px 32px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+  }
+  .login-logo {
+    font-family: var(--font-serif);
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--admin-primary);
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  .login-subtitle {
+    font-size: 13px;
+    color: var(--admin-text-muted);
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .login-error {
+    background: var(--admin-danger-bg);
+    border: 1px solid #FECACA;
+    color: var(--admin-danger);
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
+    font-size: 12.5px;
+    margin-bottom: 18px;
+    display: none;
+  }
+</style>
 </head>
-<body style="background:var(--berry); min-height:100vh;">
+<body>
 
-<div class="form-card" style="margin-top:100px;">
-  <h2>Admin Panel</h2>
-  <p class="form-sub">Loops of Love</p>
-  <div id="form-error" class="form-error"></div>
+<div class="login-card">
+  <div class="login-logo">Loops<span style="color:var(--admin-gold);"> of Love</span></div>
+  <div class="login-subtitle">Merchant & Administrator Portal</div>
+  
+  <div id="form-error" class="login-error"></div>
+  
   <form id="admin-login-form">
-    <div class="field"><label>Email</label><input type="email" id="a-email" required></div>
-    <div class="field"><label>Password</label><input type="password" id="a-password" required></div>
-    <button class="btn btn-gold btn-block" type="submit">Log in</button>
+    <div class="field">
+      <label>Admin Email</label>
+      <input type="email" id="a-email" placeholder="admin@loopsoflove.in" required autofocus>
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="a-password" placeholder="••••••••" required>
+    </div>
+    <button class="btn btn-gold" style="width:100%; padding:12px; margin-top:8px;" type="submit" id="login-btn">
+      Sign In to Dashboard &rarr;
+    </button>
   </form>
 </div>
 
 <script type="module">
-import { supabase, api } from '/admin/assets/js/admin.js';
+import { supabase, api } from './assets/js/admin.js';
 
 const errorBox = document.getElementById('form-error');
+const loginBtn = document.getElementById('login-btn');
 
 document.getElementById('admin-login-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   errorBox.style.display = 'none';
+  loginBtn.disabled = true;
+  loginBtn.textContent = 'Verifying credentials...';
+
   const email = document.getElementById('a-email').value.trim();
   const password = document.getElementById('a-password').value;
 
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) {
-    errorBox.textContent = 'Incorrect email or password.';
-    errorBox.style.display = 'block';
-    return;
-  }
-
-  // Being logged in isn't enough — confirm this email is on the
-  // ADMIN_EMAILS allowlist server-side before letting them in.
   try {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw new Error('Incorrect email address or password.');
+
     const { user } = await api('admin-me');
     if (!user || !user.isAdmin) {
       await supabase.auth.signOut();
-      errorBox.textContent = 'This account does not have admin access.';
-      errorBox.style.display = 'block';
-      return;
+      throw new Error('This account is not authorized as an administrator.');
     }
+    
     window.location.href = 'dashboard.html';
   } catch (err) {
-    errorBox.textContent = err.message || 'Something went wrong verifying admin access.';
+    errorBox.textContent = err.message || 'Verification failed.';
     errorBox.style.display = 'block';
+    loginBtn.disabled = false;
+    loginBtn.textContent = 'Sign In to Dashboard →';
   }
 });
 </script>

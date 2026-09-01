@@ -3,62 +3,170 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Products & Stock — Admin</title>
-<link rel="stylesheet" href="../assets/css/style.css">
+<title>Product Catalog & Stock — Loops of Love Admin</title>
 <link rel="stylesheet" href="assets/admin.css">
+<style>
+  .image-preview-box {
+    width: 100%;
+    height: 140px;
+    border: 2px dashed var(--admin-border);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #F8FAFC;
+    margin-top: 8px;
+    position: relative;
+  }
+  .image-preview-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .image-preview-placeholder {
+    color: var(--admin-text-muted);
+    font-size: 12px;
+    text-align: center;
+  }
+</style>
 </head>
 <body>
 <div class="admin-shell">
   <aside class="admin-sidebar">
-    <span class="logo">Loops<span class="halo-dot"> of Love</span></span>
-    <nav class="admin-nav" id="admin-nav"></nav>
-    <div class="signout"><button id="signout-btn">Sign out</button></div>
+    <div>
+      <div class="brand-row">
+        <div class="brand-avatar">L</div>
+        <span class="logo">Loops<span class="halo-dot"> of Love</span></span>
+      </div>
+      <nav class="admin-nav" id="admin-nav"></nav>
+    </div>
+
+    <div class="admin-sidebar-footer">
+      <div class="admin-user-pill">
+        <div class="admin-user-avatar">👤</div>
+        <div class="admin-user-info">
+          <div class="admin-user-name" id="admin-who">Admin</div>
+          <div class="admin-user-role">Store Manager</div>
+        </div>
+      </div>
+      <div class="signout"><button id="signout-btn">🚪 Sign Out</button></div>
+    </div>
   </aside>
 
   <main class="admin-main">
     <div class="admin-topbar">
-      <h1>Products & Stock</h1>
-      <button class="btn btn-gold btn-sm" id="new-product-btn">+ New item</button>
+      <div class="admin-topbar-left">
+        <h1>Products & Inventory</h1>
+        <p class="admin-topbar-subtitle">Manage catalog items, prices, discounts, stock counts, and visibility.</p>
+      </div>
+      <div class="admin-topbar-actions">
+        <button class="btn btn-gold" id="new-product-btn">✨ + Add New Product</button>
+      </div>
     </div>
 
     <div class="panel">
-      <table class="admin-table">
-        <thead><tr><th></th><th>Name</th><th>Category</th><th>Price</th><th>Discount</th><th>Stock</th><th>Status</th><th></th></tr></thead>
-        <tbody id="products-body"></tbody>
-      </table>
+      <!-- Toolbar & Search -->
+      <div class="table-toolbar">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="search-input" placeholder="Search by name, category, or ID...">
+        </div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <select id="category-filter" style="padding:8px 12px; border:1px solid var(--admin-border); border-radius:var(--radius-md); font-size:13px; background:#FFF; color:var(--admin-text-main);">
+            <option value="">All Categories</option>
+          </select>
+          <span id="product-count-badge" class="pill pill-gray">0 items</span>
+        </div>
+      </div>
+
+      <!-- Products Table -->
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th style="width:50px;">Photo</th>
+              <th>Product Name</th>
+              <th>Category</th>
+              <th>Base Price</th>
+              <th>Discount</th>
+              <th>Stock Status</th>
+              <th>Visibility</th>
+              <th style="text-align:right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="products-body"></tbody>
+        </table>
+      </div>
     </div>
   </main>
 </div>
 
+<!-- Product Edit/Create Modal -->
 <div class="modal-backdrop" id="modal-backdrop">
   <div class="modal">
-    <h3 id="modal-title">New item</h3>
+    <h3 id="modal-title">Add New Product</h3>
     <form id="product-form">
       <input type="hidden" id="p-id">
-      <div class="field"><label>Name</label><input type="text" id="p-name" required></div>
-      <div class="field"><label>Description</label><textarea id="p-description" rows="3"></textarea></div>
+      
+      <div class="field">
+        <label>Product Title</label>
+        <input type="text" id="p-name" placeholder="e.g. Handmade Sunflower Bloom Bouquet" required>
+      </div>
+      
+      <div class="field">
+        <label>Description & Material Details</label>
+        <textarea id="p-description" rows="3" placeholder="Handcrafted with pure cotton yarn, lightweight and soft..."></textarea>
+      </div>
+
       <div class="form-grid">
-        <div class="field"><label>Category</label><input type="text" id="p-category" placeholder="Rings, Necklaces…"></div>
-        
-        <!-- Upgraded Image Uploader Field -->
         <div class="field">
-          <label>Product Image</label>
-          <input type="file" id="p-image-file" accept="image/*" style="padding: 8px; font-size: 13px;">
-          <input type="hidden" id="p-image">
-          <div id="upload-status" style="font-size: 12px; color: var(--berry); margin-top: 4px;"></div>
+          <label>Category</label>
+          <input type="text" id="p-category" placeholder="e.g. Crochet & Flowers, Scrunchies..." required>
         </div>
 
-        <div class="field"><label>Price (₹)</label><input type="number" id="p-price" step="0.01" min="0" required></div>
-        <div class="field"><label>Discount %</label><input type="number" id="p-discount" step="1" min="0" max="100" value="0"></div>
-        <div class="field"><label>Stock count</label><input type="number" id="p-stock" step="1" min="0" required></div>
-        <div class="field"><label>Status</label>
-          <select id="p-active"><option value="true">Active (visible in shop)</option><option value="false">Hidden</option></select>
+        <div class="field">
+          <label>Visibility Status</label>
+          <select id="p-active">
+            <option value="true">Active (Visible in Store)</option>
+            <option value="false">Hidden / Draft</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Selling Price (₹)</label>
+          <input type="number" id="p-price" step="1" min="0" placeholder="499" required>
+        </div>
+
+        <div class="field">
+          <label>Discount Percentage (%)</label>
+          <input type="number" id="p-discount" step="1" min="0" max="100" value="0" placeholder="0">
+        </div>
+
+        <div class="field" style="grid-column: 1 / -1;">
+          <label>Stock Count (Available Units)</label>
+          <input type="number" id="p-stock" step="1" min="0" value="10" placeholder="10" required>
         </div>
       </div>
+
+      <!-- Image Section -->
+      <div class="field" style="margin-top:10px;">
+        <label>Product Image URL</label>
+        <input type="url" id="p-image" placeholder="https://images.unsplash.com/photo-...">
+        <div style="font-size:11.5px; color:var(--admin-text-muted); margin-top:4px;">Or choose a local photo:</div>
+        <input type="file" id="p-image-file" accept="image/*" style="margin-top:4px; font-size:12px; padding:6px;">
+        
+        <div class="image-preview-box" id="image-preview-box">
+          <div class="image-preview-placeholder" id="preview-placeholder">No image selected</div>
+          <img id="preview-img" style="display:none;" alt="Product preview">
+        </div>
+        <div id="upload-status" style="font-size:12px; color:var(--admin-gold); margin-top:4px;"></div>
+      </div>
+
       <div class="form-actions">
-        <button type="submit" class="btn btn-gold" id="save-btn">Save item</button>
-        <button type="button" class="btn" id="cancel-btn">Cancel</button>
-        <button type="button" class="btn btn-danger" id="delete-btn" style="display:none; margin-left:auto;">Delete</button>
+        <button type="submit" class="btn btn-gold" id="save-btn">Save Product</button>
+        <button type="button" class="btn btn-secondary" id="cancel-btn">Cancel</button>
+        <button type="button" class="btn btn-danger" id="delete-btn" style="display:none; margin-left:auto;">Delete Item</button>
       </div>
     </form>
   </div>
@@ -69,52 +177,132 @@ import { requireAdmin, renderSidebar, api, formatPrice, toast } from './assets/j
 
 const admin = await requireAdmin();
 let allProducts = [];
+
 if (admin) {
   renderSidebar('products.html', admin.email || 'Admin');
   loadProducts();
 }
 
 async function loadProducts() {
-  const { products } = await api('admin?resource=products');
-  allProducts = products || [];
-  document.getElementById('products-body').innerHTML = (products || []).map(p => `
-    <tr>
-      <td><img class="thumb" src="${p.image_url || ''}" alt="" style="width:40px; height:40px; object-fit:cover; border-radius:6px;"></td>
-      <td>${p.name}</td>
-      <td>${p.category || '—'}</td>
-      <td>${formatPrice(p.price)}</td>
-      <td>${p.discount_percent > 0 ? p.discount_percent + '%' : '—'}</td>
-      <td>${p.stock <= 3 ? `<span class="pill pill-red">${p.stock} left</span>` : p.stock}</td>
-      <td>${p.active ? '<span class="pill pill-green">Active</span>' : '<span class="pill pill-gray">Hidden</span>'}</td>
-      <td><button class="btn btn-sm edit-btn" data-id="${p.id}">Edit</button></td>
-    </tr>`).join('') || `<tr><td colspan="8">No products yet — add your first item.</td></tr>`;
+  try {
+    const { products } = await api('admin?resource=products');
+    allProducts = products || [];
+    populateCategories(allProducts);
+    renderTable(allProducts);
+  } catch (err) {
+    toast('Error loading catalog: ' + err.message, 'error');
+  }
+}
+
+function populateCategories(products) {
+  const cats = [...new Set(products.map(p => p.category).filter(Boolean))];
+  const select = document.getElementById('category-filter');
+  select.innerHTML = '<option value="">All Categories</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+}
+
+function renderTable(products) {
+  document.getElementById('product-count-badge').textContent = `${products.length} items`;
+  
+  if (products.length === 0) {
+    document.getElementById('products-body').innerHTML = `
+      <tr><td colspan="8" style="text-align:center; padding:40px; color:var(--admin-text-muted);">No products matching your filter.</td></tr>`;
+    return;
+  }
+
+  document.getElementById('products-body').innerHTML = products.map(p => {
+    let stockBadge = `<span class="pill pill-green">In Stock (${p.stock})</span>`;
+    if (p.stock <= 0) stockBadge = `<span class="pill pill-red">Sold Out (0)</span>`;
+    else if (p.stock <= 3) stockBadge = `<span class="pill pill-amber">Low Stock (${p.stock})</span>`;
+
+    return `
+      <tr>
+        <td>
+          <img class="thumb" src="${p.image_url || 'https://images.unsplash.com/photo-1611652022419-a9419f74343d?q=80&w=200'}" alt="${p.name}">
+        </td>
+        <td>
+          <div style="font-weight:600; color:var(--admin-text-main);">${p.name}</div>
+          <div style="font-size:11.5px; color:var(--admin-text-muted);">${p.description ? p.description.slice(0, 40) + '…' : '—'}</div>
+        </td>
+        <td><span class="pill pill-gray">${p.category || 'Handcrafted'}</span></td>
+        <td><strong>${formatPrice(p.price)}</strong></td>
+        <td>${p.discount_percent > 0 ? `<span class="pill pill-green">-${p.discount_percent}%</span>` : '—'}</td>
+        <td>${stockBadge}</td>
+        <td>${p.active ? '<span class="pill pill-green">● Active</span>' : '<span class="pill pill-gray">Draft</span>'}</td>
+        <td style="text-align:right;">
+          <button class="btn btn-secondary btn-sm edit-btn" data-id="${p.id}">✏️ Edit</button>
+        </td>
+      </tr>`;
+  }).join('');
 
   document.querySelectorAll('.edit-btn').forEach(btn => {
     btn.onclick = () => openModal(allProducts.find(p => p.id === btn.dataset.id));
   });
 }
 
+// Live Search & Filtering
+const searchInput = document.getElementById('search-input');
+const categoryFilter = document.getElementById('category-filter');
+
+function applyFilters() {
+  const query = searchInput.value.toLowerCase().trim();
+  const cat = categoryFilter.value;
+  const filtered = allProducts.filter(p => {
+    const matchQuery = !query || p.name.toLowerCase().includes(query) || (p.category && p.category.toLowerCase().includes(query));
+    const matchCat = !cat || p.category === cat;
+    return matchQuery && matchCat;
+  });
+  renderTable(filtered);
+}
+
+searchInput.addEventListener('input', applyFilters);
+categoryFilter.addEventListener('change', applyFilters);
+
+// Modal Handling
 const backdrop = document.getElementById('modal-backdrop');
 const form = document.getElementById('product-form');
 const deleteBtn = document.getElementById('delete-btn');
 const saveBtn = document.getElementById('save-btn');
+const previewImg = document.getElementById('preview-img');
+const placeholder = document.getElementById('preview-placeholder');
+const imageInput = document.getElementById('p-image');
+const fileInput = document.getElementById('p-image-file');
+
+function updatePreview(url) {
+  if (url) {
+    previewImg.src = url;
+    previewImg.style.display = 'block';
+    placeholder.style.display = 'none';
+  } else {
+    previewImg.style.display = 'none';
+    placeholder.style.display = 'block';
+  }
+}
+
+imageInput.addEventListener('input', () => updatePreview(imageInput.value.trim()));
+fileInput.addEventListener('change', () => {
+  if (fileInput.files && fileInput.files[0]) {
+    const reader = new FileReader();
+    reader.onload = (e) => updatePreview(e.target.result);
+    reader.readAsDataURL(fileInput.files[0]);
+  }
+});
 
 function openModal(product) {
-  document.getElementById('modal-title').textContent = product ? 'Edit item' : 'New item';
+  document.getElementById('modal-title').textContent = product ? 'Edit Product' : 'Add New Product';
   document.getElementById('p-id').value = product?.id || '';
   document.getElementById('p-name').value = product?.name || '';
   document.getElementById('p-description').value = product?.description || '';
   document.getElementById('p-category').value = product?.category || '';
-  
-  // Reset the file input and handle existing images
-  document.getElementById('p-image-file').value = '';
   document.getElementById('p-image').value = product?.image_url || '';
-  document.getElementById('upload-status').textContent = product?.image_url ? '(Leave blank to keep existing image)' : '';
+  fileInput.value = '';
+  document.getElementById('upload-status').textContent = '';
+  updatePreview(product?.image_url || '');
   
   document.getElementById('p-price').value = product?.price ?? '';
   document.getElementById('p-discount').value = product?.discount_percent ?? 0;
-  document.getElementById('p-stock').value = product?.stock ?? '';
+  document.getElementById('p-stock').value = product?.stock ?? 10;
   document.getElementById('p-active').value = String(product?.active ?? true);
+  
   deleteBtn.style.display = product ? 'inline-flex' : 'none';
   backdrop.classList.add('show');
 }
@@ -125,78 +313,82 @@ document.getElementById('cancel-btn').onclick = () => backdrop.classList.remove(
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   const id = document.getElementById('p-id').value;
-  const fileInput = document.getElementById('p-image-file');
-  let finalImageUrl = document.getElementById('p-image').value;
+  let imageUrl = imageInput.value.trim();
 
   try {
     saveBtn.disabled = true;
-    saveBtn.textContent = 'Uploading...';
+    saveBtn.textContent = 'Saving...';
 
-    // If the user selected a new file, upload it to Supabase first
+    // If local file was chosen and no direct URL, read as base64
     if (fileInput.files.length > 0) {
       const file = fileInput.files[0];
-      const fileExt = file.name.split('.').pop();
-      const fileName = `product-${Date.now()}.${fileExt}`;
-      
-      const SUPABASE_URL = 'https://wjwkrdnckdnolvxrebjz.supabase.co';
-      const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indqd2tyZG5ja2Rub2x2eHJlYmp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MjkzODgsImV4cCI6MjEwMjEwNTM4OH0.-FGvquX2sACyUevQTm1ucrTHDFwDfnWCWXEb69IotTQ';
-
-      document.getElementById('upload-status').textContent = 'Sending to cloud...';
-
-      const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/products/${fileName}`, {
-        method: 'POST',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
-          'Content-Type': file.type
-        },
-        body: file
+      const reader = new FileReader();
+      const base64Promise = new Promise((resolve) => {
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.readAsDataURL(file);
       });
-
-      if (!uploadRes.ok) throw new Error('Failed to upload image to Supabase');
-
-      // Grab the permanent public URL for the new image
-      finalImageUrl = `${SUPABASE_URL}/storage/v1/object/public/products/${fileName}`;
+      const data_base64 = await base64Promise;
+      
+      try {
+        const upRes = await api('upload-image', {
+          method: 'POST',
+          body: JSON.stringify({
+            product_id: id || 'temp-' + Date.now(),
+            filename: file.name,
+            mime_type: file.type,
+            data_base64,
+            is_primary: true
+          })
+        });
+        if (upRes.public_url) imageUrl = upRes.public_url;
+      } catch (uploadErr) {
+        console.warn('Cloudinary upload warning:', uploadErr);
+      }
     }
 
-    saveBtn.textContent = 'Saving data...';
+    if (!imageUrl) {
+      imageUrl = 'https://images.unsplash.com/photo-1611652022419-a9419f74343d?q=80&w=800';
+    }
 
     const payload = {
       name: document.getElementById('p-name').value.trim(),
       description: document.getElementById('p-description').value.trim(),
       category: document.getElementById('p-category').value.trim(),
-      image_url: finalImageUrl,
+      image_url: imageUrl,
       price: parseFloat(document.getElementById('p-price').value),
       discount_percent: parseFloat(document.getElementById('p-discount').value) || 0,
       stock: parseInt(document.getElementById('p-stock').value),
       active: document.getElementById('p-active').value === 'true'
     };
 
-    if (id) await api('admin?resource=products', { method: 'PUT', body: JSON.stringify({ id, ...payload }) });
-    else await api('admin?resource=products', { method: 'POST', body: JSON.stringify(payload) });
+    if (id) {
+      await api('admin?resource=products', { method: 'PUT', body: JSON.stringify({ id, ...payload }) });
+      toast('Product updated successfully ✨');
+    } else {
+      await api('admin?resource=products', { method: 'POST', body: JSON.stringify(payload) });
+      toast('New product added to catalog ✨');
+    }
     
-    toast('Item saved');
     backdrop.classList.remove('show');
     loadProducts();
   } catch (err) {
-    toast('Could not save — ' + err.message);
-    document.getElementById('upload-status').textContent = 'Upload failed. Try again.';
+    toast('Could not save product: ' + err.message, 'error');
   } finally {
     saveBtn.disabled = false;
-    saveBtn.textContent = 'Save item';
+    saveBtn.textContent = 'Save Product';
   }
 });
 
 deleteBtn.onclick = async () => {
   const id = document.getElementById('p-id').value;
-  if (!id || !confirm('Delete this item permanently?')) return;
+  if (!id || !confirm('Are you sure you want to permanently delete this product?')) return;
   try {
     await api('admin?resource=products', { method: 'DELETE', body: JSON.stringify({ id }) });
-    toast('Item deleted');
+    toast('Product deleted');
     backdrop.classList.remove('show');
     loadProducts();
   } catch (err) {
-    toast('Could not delete — ' + err.message);
+    toast('Could not delete: ' + err.message, 'error');
   }
 };
 </script>

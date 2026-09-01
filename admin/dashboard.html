@@ -3,51 +3,126 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard — Admin</title>
-<link rel="stylesheet" href="../assets/css/style.css">
+<title>Merchant Dashboard — Loops of Love Admin</title>
 <link rel="stylesheet" href="assets/admin.css">
 </head>
 <body>
 <div class="admin-shell">
   <aside class="admin-sidebar">
-    <span class="logo">Loops<span class="halo-dot"> of Love</span></span>
-    <nav class="admin-nav" id="admin-nav"></nav>
-    <div class="signout"><button id="signout-btn">Sign out</button></div>
+    <div>
+      <div class="brand-row">
+        <div class="brand-avatar">L</div>
+        <span class="logo">Loops<span class="halo-dot"> of Love</span></span>
+      </div>
+      <nav class="admin-nav" id="admin-nav"></nav>
+    </div>
+
+    <div class="admin-sidebar-footer">
+      <div class="admin-user-pill">
+        <div class="admin-user-avatar">👤</div>
+        <div class="admin-user-info">
+          <div class="admin-user-name" id="admin-who">Admin</div>
+          <div class="admin-user-role">Store Manager</div>
+        </div>
+      </div>
+      <div class="signout"><button id="signout-btn">🚪 Sign Out</button></div>
+    </div>
   </aside>
 
   <main class="admin-main">
     <div class="admin-topbar">
-      <h1>Dashboard</h1>
-      <span class="who" id="admin-who"></span>
-    </div>
-
-    <div class="stat-row">
-      <div class="stat-card"><div class="label">Orders today</div><div class="value" id="stat-orders-today">–</div></div>
-      <div class="stat-card"><div class="label">Total products</div><div class="value" id="stat-products">–</div></div>
-      <div class="stat-card"><div class="label">Low stock (≤3)</div><div class="value" id="stat-low-stock">–</div></div>
-      <div class="stat-card"><div class="label">Orders this week</div><div class="value" id="stat-orders-week">–</div></div>
-    </div>
-
-    <div class="panel">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <div>
-          <h2>Global Order Blocking</h2>
-          <p class="panel-desc">Emergency stop — instantly pause all new orders storewide.</p>
-        </div>
-        <label class="switch">
-          <input type="checkbox" id="block-toggle">
-          <span class="slider"></span>
-        </label>
+      <div class="admin-topbar-left">
+        <h1>Overview Dashboard</h1>
+        <p class="admin-topbar-subtitle">Real-time metrics, order status, and inventory monitoring.</p>
+      </div>
+      <div class="admin-topbar-actions">
+        <a href="../index.html" target="_blank" class="view-store-btn">
+          <span>🛍️ View Storefront</span> <span>↗</span>
+        </a>
       </div>
     </div>
 
+    <!-- Stat Metrics Row -->
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-label">Orders Today</span>
+          <div class="stat-icon purple">📦</div>
+        </div>
+        <div class="stat-value" id="stat-orders-today">–</div>
+        <div class="stat-footer"><span>⚡ Placed in the last 24 hours</span></div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-label">Orders This Week</span>
+          <div class="stat-icon blue">📈</div>
+        </div>
+        <div class="stat-value" id="stat-orders-week">–</div>
+        <div class="stat-footer"><span>🗓️ Rolling 7-day volume</span></div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-label">Total Catalog</span>
+          <div class="stat-icon emerald">🧶</div>
+        </div>
+        <div class="stat-value" id="stat-products">–</div>
+        <div class="stat-footer"><span>✨ Active & Draft items</span></div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-label">Low Stock (≤ 3)</span>
+          <div class="stat-icon amber">⚠️</div>
+        </div>
+        <div class="stat-value" id="stat-low-stock" style="color:var(--admin-warning);">–</div>
+        <div class="stat-footer"><span>🚨 Requires restocking</span></div>
+      </div>
+    </div>
+
+    <!-- Storefront Control Panel -->
     <div class="panel">
-      <h2>Recent orders</h2>
-      <p class="panel-desc">Latest 8 orders placed on the storefront.</p>
-      <table class="admin-table">
-        <thead><tr><th>Order #</th><th>Customer</th><th>Total</th><th>Status</th><th>Placed</th></tr></thead>
-        <tbody id="recent-orders"></tbody>
-      </table>
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+        <div>
+          <h2>Store Checkout Status</h2>
+          <p class="panel-desc" style="margin-bottom:0;">Emergency switch: Pause all checkout orders instantly if overwhelmed or out of stock.</p>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span id="store-status-text" style="font-weight:600; font-size:13px; color:var(--admin-success);">● Accepting Orders</span>
+          <label class="switch">
+            <input type="checkbox" id="block-toggle">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Orders Table -->
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <h2>Recent Customer Orders</h2>
+          <p class="panel-desc" style="margin-bottom:0;">Latest 8 orders placed on the storefront.</p>
+        </div>
+        <a href="orders.html" class="btn btn-secondary btn-sm">View All Orders &rarr;</a>
+      </div>
+
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Destination</th>
+              <th>Total (COD)</th>
+              <th>Status</th>
+              <th>Placed On</th>
+            </tr>
+          </thead>
+          <tbody id="recent-orders"></tbody>
+        </table>
+      </div>
     </div>
   </main>
 </div>
@@ -62,40 +137,75 @@ if (admin) {
   const today = new Date(); today.setHours(0,0,0,0);
   const weekAgo = new Date(Date.now() - 7*24*60*60*1000);
 
-  const { orders } = await api('admin?resource=orders');
-  const { products } = await api('admin?resource=products');
+  let orders = [];
+  let products = [];
 
-  const ordersToday = (orders || []).filter(o => new Date(o.created_at) >= today).length;
-  const ordersWeek = (orders || []).filter(o => new Date(o.created_at) >= weekAgo).length;
-  const lowStock = (products || []).filter(p => p.stock <= 3).length;
+  try {
+    const ordRes = await api('admin?resource=orders');
+    orders = ordRes.orders || [];
+  } catch (e) {
+    console.warn('Orders fetch error:', e);
+  }
+
+  try {
+    const prodRes = await api('admin?resource=products');
+    products = prodRes.products || [];
+  } catch (e) {
+    console.warn('Products fetch error:', e);
+  }
+
+  const ordersToday = orders.filter(o => new Date(o.created_at) >= today).length;
+  const ordersWeek = orders.filter(o => new Date(o.created_at) >= weekAgo).length;
+  const lowStock = products.filter(p => p.stock <= 3).length;
 
   document.getElementById('stat-orders-today').textContent = ordersToday;
   document.getElementById('stat-orders-week').textContent = ordersWeek;
-  document.getElementById('stat-products').textContent = (products || []).length;
+  document.getElementById('stat-products').textContent = products.length;
   document.getElementById('stat-low-stock').textContent = lowStock;
 
-  document.getElementById('recent-orders').innerHTML = (orders || []).slice(0, 8).map(o => `
+  document.getElementById('recent-orders').innerHTML = orders.slice(0, 8).map(o => `
     <tr>
-      <td>${o.order_number}</td>
-      <td>${o.customer_name}</td>
-      <td>${formatPrice(o.total)}</td>
-      <td><span class="pill pill-gray">${o.status}</span></td>
-      <td>${new Date(o.created_at).toLocaleDateString()}</td>
-    </tr>`).join('') || `<tr><td colspan="5">No orders yet.</td></tr>`;
+      <td><strong>${o.order_number}</strong></td>
+      <td><strong>${o.customer_name}</strong></td>
+      <td>${o.city || '—'}, ${o.state || '—'}</td>
+      <td><strong>${formatPrice(o.total)}</strong></td>
+      <td><span class="pill pill-${(o.status || 'placed').toLowerCase()}">${o.status}</span></td>
+      <td style="color:var(--admin-text-muted); font-size:12px;">${new Date(o.created_at).toLocaleDateString(undefined, { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' })}</td>
+    </tr>`).join('') || `<tr><td colspan="6" style="text-align:center; padding:30px; color:var(--admin-text-muted);">No orders recorded yet.</td></tr>`;
 
-  const { settings } = await api('settings');
-  const blockToggle = document.getElementById('block-toggle');
-  blockToggle.checked = settings.block_orders === 'true';
+  // Global order blocking toggle
+  try {
+    const { settings } = await api('settings');
+    const blockToggle = document.getElementById('block-toggle');
+    const statusText = document.getElementById('store-status-text');
+    
+    const updateStatusLabel = (isBlocked) => {
+      if (isBlocked) {
+        statusText.textContent = '⛔ Store Paused';
+        statusText.style.color = 'var(--admin-danger)';
+      } else {
+        statusText.textContent = '● Accepting Orders';
+        statusText.style.color = 'var(--admin-success)';
+      }
+    };
 
-  blockToggle.addEventListener('change', async () => {
-    try {
-      await api('admin?resource=settings', { method: 'PUT', body: JSON.stringify({ key: 'block_orders', value: blockToggle.checked }) });
-      toast(blockToggle.checked ? 'Orders are now blocked storewide' : 'Orders re-enabled');
-    } catch {
-      toast('Could not update — try again');
-      blockToggle.checked = !blockToggle.checked;
-    }
-  });
+    blockToggle.checked = settings.block_orders === 'true';
+    updateStatusLabel(blockToggle.checked);
+
+    blockToggle.addEventListener('change', async () => {
+      try {
+        await api('admin?resource=settings', { method: 'PUT', body: JSON.stringify({ key: 'block_orders', value: String(blockToggle.checked) }) });
+        updateStatusLabel(blockToggle.checked);
+        toast(blockToggle.checked ? 'Storefront orders are now paused' : 'Storefront orders re-enabled');
+      } catch {
+        toast('Could not update status — try again', 'error');
+        blockToggle.checked = !blockToggle.checked;
+        updateStatusLabel(blockToggle.checked);
+      }
+    });
+  } catch (e) {
+    console.error('Settings load error:', e);
+  }
 }
 </script>
 </body>

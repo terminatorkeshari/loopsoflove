@@ -3,76 +3,150 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Home Page CMS — Admin</title>
-<link rel="stylesheet" href="../assets/css/style.css">
+<title>Hero Banners & CMS — Loops of Love Admin</title>
 <link rel="stylesheet" href="assets/admin.css">
+<style>
+  .banner-preview-box {
+    width: 100%;
+    height: 160px;
+    border: 2px dashed var(--admin-border);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #111;
+    color: #FFF;
+    margin-top: 8px;
+    position: relative;
+  }
+  .banner-preview-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.85;
+  }
+  .banner-preview-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to right, rgba(0,0,0,0.7), transparent);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+</style>
 </head>
 <body>
 <div class="admin-shell">
   <aside class="admin-sidebar">
-    <span class="logo">Loops<span class="halo-dot"> of Love</span></span>
-    <nav class="admin-nav" id="admin-nav"></nav>
-    <div class="signout"><button id="signout-btn">Sign out</button></div>
+    <div>
+      <div class="brand-row">
+        <div class="brand-avatar">L</div>
+        <span class="logo">Loops<span class="halo-dot"> of Love</span></span>
+      </div>
+      <nav class="admin-nav" id="admin-nav"></nav>
+    </div>
+
+    <div class="admin-sidebar-footer">
+      <div class="admin-user-pill">
+        <div class="admin-user-avatar">👤</div>
+        <div class="admin-user-info">
+          <div class="admin-user-name" id="admin-who">Admin</div>
+          <div class="admin-user-role">Store Manager</div>
+        </div>
+      </div>
+      <div class="signout"><button id="signout-btn">🚪 Sign Out</button></div>
+    </div>
   </aside>
 
   <main class="admin-main">
     <div class="admin-topbar">
-      <h1>Home Page CMS</h1>
-      <button class="btn btn-gold btn-sm" id="new-slide-btn">+ New slide</button>
+      <div class="admin-topbar-left">
+        <h1>Storefront Hero Banners</h1>
+        <p class="admin-topbar-subtitle">Manage rotating full-screen hero slides, promotional messaging, and call-to-action buttons.</p>
+      </div>
+      <div class="admin-topbar-actions">
+        <button class="btn btn-gold" id="new-slide-btn">✨ + Add New Slide</button>
+      </div>
     </div>
 
     <div class="panel">
-      <h2>Hero banner slides</h2>
-      <p class="panel-desc">The home page hero rotates through every <strong>active</strong> slide below, in order. Add as many as you like — one slide just won't rotate.</p>
-      <table class="admin-table">
-        <thead><tr><th>Image</th><th>Headline</th><th>Order</th><th>Status</th><th>Action</th></tr></thead>
-        <tbody id="banners-body"></tbody>
-      </table>
+      <div class="panel-header">
+        <div>
+          <h2>Hero Slides in Rotation</h2>
+          <p class="panel-desc" style="margin-bottom:0;">Slides display on the homepage in sequence (Order 0 first). Touch swipe and autoplay are enabled.</p>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th style="width:140px;">Slide Preview</th>
+              <th>Headline & Content</th>
+              <th>Sort Order</th>
+              <th>Status</th>
+              <th style="text-align:right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="banners-body"></tbody>
+        </table>
+      </div>
     </div>
   </main>
 </div>
 
-<!-- Modal -->
+<!-- Slide Modal -->
 <div class="modal-backdrop" id="modal-backdrop">
-  <div class="modal" id="slideModal">
-    <h3>New slide</h3>
+  <div class="modal">
+    <h3 id="modal-title">New Hero Slide</h3>
     
     <div class="field">
-      <label>EYEBROW TAG (OPTIONAL)</label>
-      <input type="text" id="eyebrow" placeholder="Customize Your Own">
+      <label>Eyebrow Tag (Optional)</label>
+      <input type="text" id="eyebrow" placeholder="e.g. 100% Handcrafted Luxury">
     </div>
     
     <div class="field">
-      <label>HEADLINE (OPTIONAL, HTML ALLOWED)</label>
-      <input type="text" id="headline" placeholder="Loop in a little <em>love</em> today.">
+      <label>Main Headline (Required)</label>
+      <input type="text" id="headline" placeholder="e.g. Crafted With Pure <em>Love & Yarn</em>">
     </div>
     
     <div class="field">
-      <label>SUBTITLE (OPTIONAL)</label>
-      <textarea id="subtitle" placeholder="Handmade, customizable accessories..."></textarea>
+      <label>Subheadline / Tagline</label>
+      <textarea id="subtitle" rows="2" placeholder="e.g. Bespoke crochet flowers, charms, and customizable gift hampers."></textarea>
+    </div>
+
+    <div class="form-grid">
+      <div class="field">
+        <label>Display Order (0 = First)</label>
+        <input type="number" id="order" value="0" step="1">
+      </div>
+      
+      <div class="field">
+        <label>Rotation Status</label>
+        <select id="status">
+          <option value="Active">Active (In Live Rotation)</option>
+          <option value="Draft">Draft (Hidden)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field" style="margin-top:10px;">
+      <label>Banner Image (Direct URL or Upload)</label>
+      <input type="url" id="slide_image_url" placeholder="https://images.unsplash.com/photo-...">
+      <div style="font-size:11.5px; color:var(--admin-text-muted); margin-top:4px;">Or choose a local photo:</div>
+      <input type="file" id="slide_image_file" accept="image/*" style="margin-top:4px; font-size:12px; padding:6px;">
+      
+      <div class="banner-preview-box" id="banner-preview">
+        <div id="banner-placeholder" style="font-size:12px; color:#888;">Select an image to preview slide overlay</div>
+        <img id="banner-img" style="display:none;" alt="Slide preview">
+      </div>
     </div>
     
-    <div class="field">
-      <label>SLIDE IMAGE UPLOAD (REQUIRED)</label>
-      <input type="file" id="slide_image_file" accept="image/*" required style="padding-top: 9px;">
-    </div>
-    
-    <div class="field">
-      <label>ORDER (LOWER SHOWS FIRST)</label>
-      <input type="number" id="order" value="0">
-    </div>
-    
-    <div class="field">
-      <label>STATUS</label>
-      <select id="status">
-        <option value="Active">Active (in rotation)</option>
-        <option value="Draft">Draft (hidden)</option>
-      </select>
-    </div>
-    
-    <div style="margin-top: 24px; display: flex; gap: 12px;">
-      <button class="btn btn-gold" id="save-btn">Save slide</button>
-      <button class="btn" style="border-color: var(--admin-border); color: var(--admin-espresso);" id="cancel-btn">Cancel</button>
+    <div class="form-actions">
+      <button class="btn btn-gold" id="save-btn">Save Slide</button>
+      <button class="btn btn-secondary" id="cancel-btn">Cancel</button>
     </div>
   </div>
 </div>
@@ -82,26 +156,45 @@ import { requireAdmin, renderSidebar, api, toast } from './assets/js/admin.js';
 
 let allBanners = [];
 const backdrop = document.getElementById('modal-backdrop');
+const bannerImg = document.getElementById('banner-img');
+const bannerPlaceholder = document.getElementById('banner-placeholder');
+const urlInput = document.getElementById('slide_image_url');
+const fileInput = document.getElementById('slide_image_file');
 
-// 1. WAKE UP THE BUTTONS IMMEDIATELY (Don't wait for the server!)
+function updateSlidePreview(src) {
+  if (src) {
+    bannerImg.src = src;
+    bannerImg.style.display = 'block';
+    bannerPlaceholder.style.display = 'none';
+  } else {
+    bannerImg.style.display = 'none';
+    bannerPlaceholder.style.display = 'block';
+  }
+}
+
+urlInput.addEventListener('input', () => updateSlidePreview(urlInput.value.trim()));
+fileInput.addEventListener('change', () => {
+  if (fileInput.files && fileInput.files[0]) {
+    const reader = new FileReader();
+    reader.onload = (e) => updateSlidePreview(e.target.result);
+    reader.readAsDataURL(fileInput.files[0]);
+  }
+});
+
 document.getElementById('new-slide-btn').onclick = () => {
   document.getElementById('eyebrow').value = '';
   document.getElementById('headline').value = '';
   document.getElementById('subtitle').value = '';
-  document.getElementById('slide_image_file').value = '';
+  urlInput.value = '';
+  fileInput.value = '';
+  updateSlidePreview('');
   document.getElementById('order').value = '0';
   document.getElementById('status').value = 'Active';
   backdrop.classList.add('show');
 };
 
-document.getElementById('cancel-btn').onclick = () => {
-  backdrop.classList.remove('show');
-};
+document.getElementById('cancel-btn').onclick = () => backdrop.classList.remove('show');
 
-// 2. SHOW A LOADING MESSAGE IN THE TABLE
-document.getElementById('banners-body').innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 30px; color: var(--admin-espresso);">Waking up server and loading data...</td></tr>`;
-
-// 3. START FETCHING DATA IN THE BACKGROUND
 async function initPage() {
   try {
     const admin = await requireAdmin();
@@ -110,8 +203,7 @@ async function initPage() {
       await loadBanners();
     }
   } catch (err) {
-    toast('Connection error. Please refresh the page.');
-    console.error("Initialization error:", err);
+    toast('Authentication error: ' + err.message, 'error');
   }
 }
 
@@ -120,52 +212,67 @@ async function loadBanners() {
     const { banners } = await api('admin?resource=banners');
     allBanners = banners || [];
     
+    if (allBanners.length === 0) {
+      document.getElementById('banners-body').innerHTML = `
+        <tr><td colspan="5" style="text-align:center; padding:40px; color:var(--admin-text-muted);">No hero slides yet. Add one above!</td></tr>`;
+      return;
+    }
+
     document.getElementById('banners-body').innerHTML = allBanners.map(b => `
       <tr>
-        <td><img style="width: 60px; height: 60px; object-fit: cover; border-radius: 6px; background: var(--admin-border);" src="${b.image_url || ''}" alt=""></td>
-        <td>${(b.title || '<em>No headline</em>').replace(/<[^>]+>/g, '')}</td>
-        <td>${b.sort_order || 0}</td>
-        <td>${b.active ? '<span class="pill pill-green">Active</span>' : '<span class="pill pill-gray">Hidden</span>'}</td>
-        <td><button class="btn btn-sm btn-danger delete-btn" data-id="${b.id}">Delete</button></td>
-      </tr>`).join('') || `<tr><td colspan="5" style="text-align: center; padding: 20px;">No slides yet — add your first one.</td></tr>`;
+        <td>
+          <img style="width:130px; height:65px; object-fit:cover; border-radius:var(--radius-sm); border:1px solid var(--admin-border);" src="${b.image_url || ''}" alt="Banner">
+        </td>
+        <td>
+          <div style="font-size:11px; font-weight:700; color:var(--admin-gold); text-transform:uppercase;">${b.eyebrow || 'PROMOTIONAL BANNER'}</div>
+          <div style="font-weight:700; color:var(--admin-text-main); font-size:14px; margin:2px 0;">${(b.title || 'Loops of Love').replace(/<[^>]+>/g, '')}</div>
+          <div style="font-size:12px; color:var(--admin-text-muted);">${b.subtitle || '—'}</div>
+        </td>
+        <td><strong>#${b.sort_order || 0}</strong></td>
+        <td>${b.active ? '<span class="pill pill-green">● In Rotation</span>' : '<span class="pill pill-gray">Draft</span>'}</td>
+        <td style="text-align:right;">
+          <button class="btn btn-danger btn-sm delete-btn" data-id="${b.id}">🗑️ Delete</button>
+        </td>
+      </tr>`).join('');
 
-    // Attach delete events
     document.querySelectorAll('.delete-btn').forEach(btn => {
       btn.onclick = () => deleteSlide(btn.dataset.id);
     });
   } catch (err) {
-    document.getElementById('banners-body').innerHTML = `<tr><td colspan="5" style="text-align: center; color: red;">Failed to load data.</td></tr>`;
-    toast('Failed to load banners: ' + err.message);
+    toast('Failed to load banners: ' + err.message, 'error');
   }
 }
 
-// 4. SAVE SLIDE LOGIC
 document.getElementById('save-btn').onclick = async () => {
   const saveBtn = document.getElementById('save-btn');
-  const fileInput = document.getElementById('slide_image_file');
-  const file = fileInput.files[0];
+  let imageBase64 = null;
+  let directUrl = urlInput.value.trim();
 
-  if (!file) {
-    toast("Please upload an image for the slide!");
+  if (fileInput.files.length > 0) {
+    const file = fileInput.files[0];
+    imageBase64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  if (!directUrl && !imageBase64) {
+    toast("Please enter an image URL or choose a file!", "error");
     return;
   }
 
-  saveBtn.innerText = 'Uploading...';
+  saveBtn.innerText = 'Saving Slide...';
   saveBtn.disabled = true;
 
   try {
-    const imageBase64 = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = error => reject(error);
-    });
-
     const payload = {
       eyebrow: document.getElementById('eyebrow').value.trim(),
       headline: document.getElementById('headline').value.trim(),
       subtitle: document.getElementById('subtitle').value.trim(),
       image_base64: imageBase64,
+      image_url: directUrl || undefined,
       order: parseInt(document.getElementById('order').value) || 0,
       status: document.getElementById('status').value
     };
@@ -175,40 +282,31 @@ document.getElementById('save-btn').onclick = async () => {
       body: JSON.stringify(payload)
     });
 
-    toast("Slide successfully saved!");
+    toast("Hero slide saved successfully ✨");
     backdrop.classList.remove('show');
-    
-    // Show loading state while refreshing table
-    document.getElementById('banners-body').innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 20px;">Refreshing...</td></tr>`;
     await loadBanners();
-    
   } catch (err) {
-    toast("Error: " + err.message);
+    toast("Error: " + err.message, "error");
   } finally {
-    saveBtn.innerText = 'Save slide';
+    saveBtn.innerText = 'Save Slide';
     saveBtn.disabled = false;
   }
 };
 
-// 5. DELETE SLIDE LOGIC
 async function deleteSlide(id) {
-  if (!confirm('Are you sure you want to delete this slide permanently?')) return;
-  
+  if (!confirm('Are you sure you want to delete this hero banner permanently?')) return;
   try {
-    document.getElementById('banners-body').innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 20px;">Deleting...</td></tr>`;
     await api('admin?resource=banners', { 
       method: 'DELETE', 
       body: JSON.stringify({ id }) 
     });
-    toast('Slide deleted');
+    toast('Banner slide deleted');
     await loadBanners();
   } catch (err) {
-    toast('Could not delete — ' + err.message);
-    await loadBanners();
+    toast('Could not delete: ' + err.message, 'error');
   }
 }
 
-// Start everything up!
 initPage();
 </script>
 </body>

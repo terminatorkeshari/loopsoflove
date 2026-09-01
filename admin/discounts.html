@@ -3,53 +3,98 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Discounts & Offers — Admin</title>
-<link rel="stylesheet" href="../assets/css/style.css">
+<title>Discounts & Offers — Loops of Love Admin</title>
 <link rel="stylesheet" href="assets/admin.css">
 </head>
 <body>
 <div class="admin-shell">
   <aside class="admin-sidebar">
-    <span class="logo">Loops<span class="halo-dot"> of Love</span></span>
-    <nav class="admin-nav" id="admin-nav"></nav>
-    <div class="signout"><button id="signout-btn">Sign out</button></div>
+    <div>
+      <div class="brand-row">
+        <div class="brand-avatar">L</div>
+        <span class="logo">Loops<span class="halo-dot"> of Love</span></span>
+      </div>
+      <nav class="admin-nav" id="admin-nav"></nav>
+    </div>
+
+    <div class="admin-sidebar-footer">
+      <div class="admin-user-pill">
+        <div class="admin-user-avatar">👤</div>
+        <div class="admin-user-info">
+          <div class="admin-user-name" id="admin-who">Admin</div>
+          <div class="admin-user-role">Store Manager</div>
+        </div>
+      </div>
+      <div class="signout"><button id="signout-btn">🚪 Sign Out</button></div>
+    </div>
   </aside>
 
   <main class="admin-main">
     <div class="admin-topbar">
-      <h1>Discounts & Offers</h1>
-      <button class="btn btn-gold btn-sm" id="new-discount-btn">+ New discount</button>
+      <div class="admin-topbar-left">
+        <h1>Sales & Category Discounts</h1>
+        <p class="admin-topbar-subtitle">Apply storewide or category-specific promotional discounts across the entire catalog.</p>
+      </div>
+      <div class="admin-topbar-actions">
+        <button class="btn btn-gold" id="new-discount-btn">🏷️ + Launch Sale Campaign</button>
+      </div>
     </div>
 
     <div class="panel">
-      <p class="panel-desc">A discount here sets the <strong>discount % on individual products</strong> directly (Products & Stock page). This log keeps a record of active campaigns so it's easy to see what's currently running and switch it off later.</p>
-      <table class="admin-table">
-        <thead><tr><th>Campaign</th><th>Applies to</th><th>Discount</th><th>Status</th><th></th></tr></thead>
-        <tbody id="discounts-body"></tbody>
-      </table>
+      <div class="panel-header">
+        <div>
+          <h2>Campaign History & Active Sales</h2>
+          <p class="panel-desc" style="margin-bottom:0;">Creating a campaign automatically adjusts prices and sale badges across storefront product cards.</p>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Campaign Name</th>
+              <th>Applicable Scope</th>
+              <th>Discount Percentage</th>
+              <th>Status</th>
+              <th style="text-align:right;">Action</th>
+            </tr>
+          </thead>
+          <tbody id="discounts-body"></tbody>
+        </table>
+      </div>
     </div>
   </main>
 </div>
 
+<!-- Modal -->
 <div class="modal-backdrop" id="modal-backdrop">
   <div class="modal">
-    <h3>New discount campaign</h3>
+    <h3 id="modal-title">New Promotional Campaign</h3>
     <form id="discount-form">
-      <div class="field"><label>Campaign name</label><input type="text" id="d-name" required placeholder="e.g. Diwali Sale"></div>
+      <div class="field">
+        <label>Campaign Title</label>
+        <input type="text" id="d-name" required placeholder="e.g. Festive Blossom Sale, Summer Drop">
+      </div>
       <div class="form-grid">
-        <div class="field"><label>Discount %</label><input type="number" id="d-percent" min="0" max="100" required></div>
-        <div class="field"><label>Applies to</label>
+        <div class="field">
+          <label>Discount Percentage (% Off)</label>
+          <input type="number" id="d-percent" min="1" max="90" required placeholder="20">
+        </div>
+        <div class="field">
+          <label>Applies To</label>
           <select id="d-applies">
-            <option value="all">All products</option>
-            <option value="category">A category</option>
+            <option value="all">All Store Products</option>
+            <option value="category">Specific Category</option>
           </select>
         </div>
       </div>
-      <div class="field" id="d-target-field" style="display:none;"><label>Category name</label><input type="text" id="d-target" placeholder="e.g. Necklaces"></div>
-      <p class="panel-desc" style="margin-top:4px;">Saving this will also apply the % to matching products immediately.</p>
+      <div class="field" id="d-target-field" style="display:none; margin-top:10px;">
+        <label>Target Category Name</label>
+        <input type="text" id="d-target" placeholder="e.g. Crochet & Flowers, Scrunchies">
+      </div>
       <div class="form-actions">
-        <button type="submit" class="btn btn-gold">Create & apply</button>
-        <button type="button" class="btn" id="cancel-btn">Cancel</button>
+        <button type="submit" class="btn btn-gold">Launch Campaign</button>
+        <button type="button" class="btn btn-secondary" id="cancel-btn">Cancel</button>
       </div>
     </form>
   </div>
@@ -65,23 +110,40 @@ if (admin) {
 }
 
 async function loadDiscounts() {
-  const { discounts } = await api('admin?resource=discounts');
-  document.getElementById('discounts-body').innerHTML = (discounts || []).map(d => `
-    <tr>
-      <td>${d.name}</td>
-      <td>${d.applies_to === 'all' ? 'All products' : `Category: ${d.target}`}</td>
-      <td>${d.percent}%</td>
-      <td>${d.active ? '<span class="pill pill-green">Active</span>' : '<span class="pill pill-gray">Ended</span>'}</td>
-      <td>${d.active ? `<button class="btn btn-sm end-btn" data-id="${d.id}">End campaign</button>` : ''}</td>
-    </tr>`).join('') || `<tr><td colspan="5">No discount campaigns yet.</td></tr>`;
+  try {
+    const { discounts } = await api('admin?resource=discounts');
+    
+    if (!discounts || discounts.length === 0) {
+      document.getElementById('discounts-body').innerHTML = `
+        <tr><td colspan="5" style="text-align:center; padding:40px; color:var(--admin-text-muted);">No discount campaigns recorded.</td></tr>`;
+      return;
+    }
 
-  document.querySelectorAll('.end-btn').forEach(btn => {
-    btn.onclick = async () => {
-      await api('admin?resource=discounts', { method: 'PUT', body: JSON.stringify({ id: btn.dataset.id }) });
-      toast('Campaign ended');
-      loadDiscounts();
-    };
-  });
+    document.getElementById('discounts-body').innerHTML = discounts.map(d => `
+      <tr>
+        <td><strong>${d.name}</strong></td>
+        <td>${d.applies_to === 'all' ? '<span class="pill pill-blue">Storewide (All Items)</span>' : `<span class="pill pill-gray">Category: ${d.target}</span>`}</td>
+        <td><strong style="color:var(--admin-success); font-size:14px;">-${d.percent}% OFF</strong></td>
+        <td>${d.active ? '<span class="pill pill-green">● Running</span>' : '<span class="pill pill-gray">Ended</span>'}</td>
+        <td style="text-align:right;">
+          ${d.active ? `<button class="btn btn-danger btn-sm end-btn" data-id="${d.id}">End Sale</button>` : '<span style="color:var(--admin-text-muted); font-size:12px;">Archived</span>'}
+        </td>
+      </tr>`).join('');
+
+    document.querySelectorAll('.end-btn').forEach(btn => {
+      btn.onclick = async () => {
+        try {
+          await api('admin?resource=discounts', { method: 'PUT', body: JSON.stringify({ id: btn.dataset.id }) });
+          toast('Campaign ended and catalog prices restored ✨');
+          loadDiscounts();
+        } catch (err) {
+          toast('Could not end campaign: ' + err.message, 'error');
+        }
+      };
+    });
+  } catch (err) {
+    toast('Error loading discounts: ' + err.message, 'error');
+  }
 }
 
 const backdrop = document.getElementById('modal-backdrop');
@@ -100,12 +162,12 @@ document.getElementById('discount-form').addEventListener('submit', async (e) =>
 
   try {
     await api('admin?resource=discounts', { method: 'POST', body: JSON.stringify({ name, percent, applies_to, target }) });
-    toast('Discount created and applied');
+    toast('Campaign launched and discounts applied ✨');
     backdrop.classList.remove('show');
     e.target.reset();
     loadDiscounts();
   } catch (err) {
-    toast('Could not save — ' + err.message);
+    toast('Could not create campaign: ' + err.message, 'error');
   }
 });
 </script>

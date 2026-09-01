@@ -3,20 +3,39 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>System Settings — Admin</title>
-<link rel="stylesheet" href="../assets/css/style.css">
+<title>Store Configuration — Loops of Love Admin</title>
 <link rel="stylesheet" href="assets/admin.css">
 </head>
 <body>
 <div class="admin-shell">
   <aside class="admin-sidebar">
-    <span class="logo">Loops<span class="halo-dot"> of Love</span></span>
-    <nav class="admin-nav" id="admin-nav"></nav>
-    <div class="signout"><button id="signout-btn">Sign out</button></div>
+    <div>
+      <div class="brand-row">
+        <div class="brand-avatar">L</div>
+        <span class="logo">Loops<span class="halo-dot"> of Love</span></span>
+      </div>
+      <nav class="admin-nav" id="admin-nav"></nav>
+    </div>
+
+    <div class="admin-sidebar-footer">
+      <div class="admin-user-pill">
+        <div class="admin-user-avatar">👤</div>
+        <div class="admin-user-info">
+          <div class="admin-user-name" id="admin-who">Admin</div>
+          <div class="admin-user-role">Store Manager</div>
+        </div>
+      </div>
+      <div class="signout"><button id="signout-btn">🚪 Sign Out</button></div>
+    </div>
   </aside>
 
   <main class="admin-main">
-    <div class="admin-topbar"><h1>System Settings</h1></div>
+    <div class="admin-topbar">
+      <div class="admin-topbar-left">
+        <h1>Store & System Settings</h1>
+        <p class="admin-topbar-subtitle">Configure announcement ticker, WhatsApp customer service contact, domain, and password.</p>
+      </div>
+    </div>
 
     <div class="panel">
       <h2>Login & security</h2>

@@ -3,8 +3,7 @@ import { SUPABASE_URL, SUPABASE_ANON_KEY } from '/assets/js/app.js';
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Data calls (attaches the current Supabase session token so each
-// admin-* function can verify identity + admin status server-side).
+// Data calls (attaches the current Supabase session token)
 export async function api(path, options = {}) {
   const { data: { session } } = await supabase.auth.getSession();
   const headers = { 'Content-Type': 'application/json' };
@@ -17,7 +16,7 @@ export async function api(path, options = {}) {
 }
 
 export function formatPrice(n) {
-  return '₹' + Number(n).toLocaleString('en-IN', { minimumFractionDigits: 0 });
+  return '₹' + Number(n || 0).toLocaleString('en-IN', { minimumFractionDigits: 0 });
 }
 
 export function effectivePrice(product) {
@@ -25,11 +24,6 @@ export function effectivePrice(product) {
   return Math.round(product.price * (1 - pct / 100) * 100) / 100;
 }
 
-// Every admin page (except login) calls this first. Being logged in
-// via Supabase only proves identity — admin-me re-checks the email
-// against the server-side ADMIN_EMAILS allowlist, since that's the
-// real enforcement point (mirrored independently in every admin-*
-// function too, not just trusted from this one check).
 export async function requireAdmin() {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) { location.href = 'login.html'; return null; }
@@ -54,31 +48,47 @@ export async function signOutAdmin() {
 }
 
 const NAV_ITEMS = [
-  { href: 'dashboard.html', label: 'Dashboard' },
-  { href: 'products.html', label: 'Products & Stock' },
-  { href: 'discounts.html', label: 'Discounts & Offers' },
-  { href: 'coupons.html', label: 'Coupon Codes' },
-  { href: 'banners.html', label: 'Home Page CMS' },
-  { href: 'orders.html', label: 'Order Operations' },
-  { href: 'settings.html', label: 'System Settings' },
+  { href: 'dashboard.html', label: 'Dashboard', icon: '📊' },
+  { href: 'products.html', label: 'Products & Stock', icon: '🧶' },
+  { href: 'orders.html', label: 'Orders & Shipping', icon: '📦' },
+  { href: 'banners.html', label: 'Home Page CMS', icon: '🖼️' },
+  { href: 'coupons.html', label: 'Coupon Codes', icon: '🎟️' },
+  { href: 'discounts.html', label: 'Discounts & Offers', icon: '🏷️' },
+  { href: 'settings.html', label: 'System Settings', icon: '⚙️' },
 ];
 
-export function renderSidebar(activeHref, whoLabel) {
+export function renderSidebar(activeHref, whoLabel = 'Store Admin') {
   const nav = document.getElementById('admin-nav');
-  nav.innerHTML = NAV_ITEMS.map(item =>
-    `<a href="${item.href}" class="${item.href === activeHref ? 'active' : ''}">${item.label}</a>`
-  ).join('');
+  if (nav) {
+    nav.innerHTML = `
+      <div class="nav-label">Store Operations</div>
+      ${NAV_ITEMS.map(item => `
+        <a href="${item.href}" class="${item.href === activeHref ? 'active' : ''}">
+          <span class="nav-icon">${item.icon}</span>
+          <span>${item.label}</span>
+        </a>
+      `).join('')}
+    `;
+  }
+
   const who = document.getElementById('admin-who');
   if (who && whoLabel) who.textContent = whoLabel;
+
   const signout = document.getElementById('signout-btn');
   if (signout) signout.onclick = signOutAdmin;
 }
 
-export function toast(msg) {
+export function toast(msg, type = 'normal') {
   let el = document.querySelector('.toast');
-  if (!el) { el = document.createElement('div'); el.className = 'toast'; document.body.appendChild(el); }
-  el.textContent = msg;
+  if (!el) {
+    el = document.createElement('div');
+    el.className = 'toast';
+    document.body.appendChild(el);
+  }
+  const icon = type === 'error' ? '⚠️' : '✨';
+  el.innerHTML = `<span>${icon}</span> <span>${msg}</span>`;
   requestAnimationFrame(() => el.classList.add('show'));
   clearTimeout(el._t);
-  el._t = setTimeout(() => el.classList.remove('show'), 2600);
+  el._t = setTimeout(() => el.classList.remove('show'), 2800);
 }
+

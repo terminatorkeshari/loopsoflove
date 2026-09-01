@@ -3,42 +3,109 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Order Operations — Admin</title>
-<link rel="stylesheet" href="../assets/css/style.css">
+<title>Order Operations & Shipping — Loops of Love Admin</title>
 <link rel="stylesheet" href="assets/admin.css">
 <style>
-  .action-btns { display: flex; gap: 6px; align-items: center; }
+  .status-filter-pills {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .filter-pill {
+    padding: 6px 14px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--admin-border);
+    background: #FFFFFF;
+    color: var(--admin-text-main);
+    font-size: 12.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .filter-pill.active, .filter-pill:hover {
+    background: var(--admin-primary);
+    color: #FFFFFF;
+    border-color: var(--admin-primary);
+  }
+  .action-btns {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
 </style>
 </head>
 <body>
 <div class="admin-shell">
   <aside class="admin-sidebar">
-    <span class="logo">Loops<span class="halo-dot"> of Love</span></span>
-    <nav class="admin-nav" id="admin-nav"></nav>
-    <div class="signout"><button id="signout-btn">Sign out</button></div>
+    <div>
+      <div class="brand-row">
+        <div class="brand-avatar">L</div>
+        <span class="logo">Loops<span class="halo-dot"> of Love</span></span>
+      </div>
+      <nav class="admin-nav" id="admin-nav"></nav>
+    </div>
+
+    <div class="admin-sidebar-footer">
+      <div class="admin-user-pill">
+        <div class="admin-user-avatar">👤</div>
+        <div class="admin-user-info">
+          <div class="admin-user-name" id="admin-who">Admin</div>
+          <div class="admin-user-role">Store Manager</div>
+        </div>
+      </div>
+      <div class="signout"><button id="signout-btn">🚪 Sign Out</button></div>
+    </div>
   </aside>
 
   <main class="admin-main">
-    <div class="admin-topbar"><h1>Order Operations</h1></div>
+    <div class="admin-topbar">
+      <div class="admin-topbar-left">
+        <h1>Orders & Fulfillment</h1>
+        <p class="admin-topbar-subtitle">Process cash-on-delivery orders, print thermal shipping slips, and track fulfillment.</p>
+      </div>
+      <div class="admin-topbar-actions">
+        <button class="btn btn-secondary" id="refresh-btn">🔄 Refresh Orders</button>
+      </div>
+    </div>
 
     <div class="panel">
-      <p class="panel-desc">Every order triggers a WhatsApp notification automatically. Use this dashboard to manage status, print thermal shipping slips, or delete invalid orders.</p>
-      <table class="admin-table">
-        <thead>
-          <tr>
-            <th>Order #</th>
-            <th>Customer</th>
-            <th>Phone</th>
-            <th>Items</th>
-            <th>Coupon</th>
-            <th>Total</th>
-            <th>Status</th>
-            <th>Placed</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="orders-body"></tbody>
-      </table>
+      <!-- Status Filter Tabs -->
+      <div class="status-filter-pills">
+        <button class="filter-pill active" data-status="all">All Orders (<span id="count-all">0</span>)</button>
+        <button class="filter-pill" data-status="placed">Placed (<span id="count-placed">0</span>)</button>
+        <button class="filter-pill" data-status="confirmed">Confirmed (<span id="count-confirmed">0</span>)</button>
+        <button class="filter-pill" data-status="shipped">Shipped (<span id="count-shipped">0</span>)</button>
+        <button class="filter-pill" data-status="delivered">Delivered (<span id="count-delivered">0</span>)</button>
+        <button class="filter-pill" data-status="cancelled">Cancelled (<span id="count-cancelled">0</span>)</button>
+      </div>
+
+      <!-- Search Toolbar -->
+      <div class="table-toolbar">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="order-search" placeholder="Search by order #, customer name, or phone number...">
+        </div>
+      </div>
+
+      <!-- Orders Table -->
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer Details</th>
+              <th>Ordered Items</th>
+              <th>Coupon</th>
+              <th>Total Amount</th>
+              <th>Status</th>
+              <th>Placed Date</th>
+              <th style="text-align:right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="orders-body"></tbody>
+        </table>
+      </div>
     </div>
   </main>
 </div>
@@ -48,6 +115,7 @@ import { requireAdmin, renderSidebar, api, formatPrice, toast } from './assets/j
 
 const admin = await requireAdmin();
 let allOrders = [];
+let activeFilter = 'all';
 
 if (admin) {
   renderSidebar('orders.html', admin.email || 'Admin');
@@ -57,44 +125,107 @@ if (admin) {
 const STATUSES = ['placed', 'confirmed', 'shipped', 'delivered', 'cancelled'];
 
 async function loadOrders() {
-  const res = await api('admin?resource=orders');
-  allOrders = res.orders || [];
-  
-  document.getElementById('orders-body').innerHTML = allOrders.map(o => `
-    <tr>
-      <td><strong>${o.order_number}</strong></td>
-      <td>${o.customer_name}<br><span style="color:rgba(59,36,50,0.55); font-size:11px;">${o.address}</span></td>
-      <td>${o.phone}</td>
-      <td>${(o.items || []).map(i => `${i.name} ×${i.qty}`).join(', ')}</td>
-      <td>${o.coupon_code ? `<span class="pill pill-green">${o.coupon_code}</span> -${formatPrice(o.discount_amount || 0)}` : '—'}</td>
-      <td><strong>${formatPrice(o.total)}</strong></td>
-      <td>
-        <select data-id="${o.id}" class="status-select" style="padding: 6px; border-radius: 6px; border: 1px solid var(--pink-soft);">
-          ${STATUSES.map(s => `<option value="${s}" ${s === o.status ? 'selected' : ''}>${s}</option>`).join('')}
-        </select>
-      </td>
-      <td style="font-size: 12px; color: rgba(59,36,50,0.6);">${new Date(o.created_at).toLocaleString()}</td>
-      <td>
-        <div class="action-btns">
-          <button class="btn btn-sm print-btn" data-id="${o.id}" style="background: var(--pink-soft); color: var(--berry); border: none;">Print Slip</button>
-          <button class="btn btn-sm btn-danger delete-btn" data-id="${o.id}" style="padding: 6px 10px; font-size: 11px;">Delete</button>
-        </div>
-      </td>
-    </tr>`).join('') || `<tr><td colspan="9" style="text-align:center; padding: 30px;">No orders yet.</td></tr>`;
+  try {
+    const res = await api('admin?resource=orders');
+    allOrders = res.orders || [];
+    updateCounts();
+    filterAndRender();
+  } catch (err) {
+    toast('Error loading orders: ' + err.message, 'error');
+  }
+}
 
-  // Attach status change events
+function updateCounts() {
+  document.getElementById('count-all').textContent = allOrders.length;
+  STATUSES.forEach(st => {
+    const el = document.getElementById(`count-${st}`);
+    if (el) el.textContent = allOrders.filter(o => (o.status || 'placed').toLowerCase() === st).length;
+  });
+}
+
+function filterAndRender() {
+  const query = document.getElementById('order-search').value.toLowerCase().trim();
+  
+  const filtered = allOrders.filter(o => {
+    const matchStatus = activeFilter === 'all' || (o.status || 'placed').toLowerCase() === activeFilter;
+    const matchQuery = !query || 
+      (o.order_number && o.order_number.toLowerCase().includes(query)) ||
+      (o.customer_name && o.customer_name.toLowerCase().includes(query)) ||
+      (o.phone && o.phone.includes(query));
+    return matchStatus && matchQuery;
+  });
+
+  renderTable(filtered);
+}
+
+function renderTable(orders) {
+  if (orders.length === 0) {
+    document.getElementById('orders-body').innerHTML = `
+      <tr><td colspan="8" style="text-align:center; padding:40px; color:var(--admin-text-muted);">No orders matching your criteria.</td></tr>`;
+    return;
+  }
+
+  document.getElementById('orders-body').innerHTML = orders.map(o => {
+    const phoneClean = (o.phone || '').replace(/\D/g, '');
+    const waText = encodeURIComponent(`Hi ${o.customer_name}! This is Loops of Love regarding your Order #${o.order_number}.`);
+    const waUrl = `https://wa.me/91${phoneClean.slice(-10)}?text=${waText}`;
+
+    return `
+      <tr>
+        <td>
+          <div style="font-weight:700; color:var(--admin-text-main); font-size:14px;">#${o.order_number}</div>
+        </td>
+        <td>
+          <div style="font-weight:600; color:var(--admin-text-main);">${o.customer_name}</div>
+          <div style="font-size:12px; color:var(--admin-text-muted); margin:2px 0;">📍 ${o.street || o.address || '—'}, ${o.city || ''} ${o.pincode || ''}</div>
+          <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+            <span style="font-size:12px; font-weight:500;">📞 ${o.phone}</span>
+            <a href="${waUrl}" target="_blank" class="btn btn-sm" style="background:#E6F7ED; color:#0F766E; padding:2px 8px; font-size:11px; border-radius:4px; text-decoration:none;">💬 WhatsApp</a>
+          </div>
+        </td>
+        <td>
+          <div style="font-size:12.5px; line-height:1.4;">
+            ${(o.items || []).map(i => `<div>• <strong>${i.name}</strong> × ${i.qty}</div>`).join('')}
+          </div>
+        </td>
+        <td>
+          ${o.coupon_code ? `<span class="pill pill-green">${o.coupon_code}</span> <div style="font-size:11px; color:#059669;">-${formatPrice(o.discount_amount || 0)}</div>` : '<span style="color:var(--admin-text-muted);">—</span>'}
+        </td>
+        <td>
+          <div style="font-size:14.5px; font-weight:700; color:var(--admin-text-main);">${formatPrice(o.total)}</div>
+          <div style="font-size:11px; color:var(--admin-text-muted);">Cash on Delivery</div>
+        </td>
+        <td>
+          <select data-id="${o.id}" class="status-select" style="padding:6px 10px; border-radius:var(--radius-sm); border:1px solid var(--admin-border); font-size:12.5px; font-weight:600; background:#FFF; color:var(--admin-text-main);">
+            ${STATUSES.map(s => `<option value="${s}" ${s === (o.status || 'placed') ? 'selected' : ''}>${s.toUpperCase()}</option>`).join('')}
+          </select>
+        </td>
+        <td style="font-size:12px; color:var(--admin-text-muted);">
+          ${new Date(o.created_at).toLocaleDateString(undefined, { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' })}
+        </td>
+        <td style="text-align:right;">
+          <div class="action-btns" style="justify-content:flex-end;">
+            <button class="btn btn-secondary btn-sm print-btn" data-id="${o.id}">🖨️ Slip</button>
+            <button class="btn btn-danger btn-sm delete-btn" data-id="${o.id}">🗑️</button>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+
+  // Status updates
   document.querySelectorAll('.status-select').forEach(sel => {
     sel.onchange = async () => {
       try {
         await api('admin?resource=orders', { method: 'PUT', body: JSON.stringify({ id: sel.dataset.id, status: sel.value }) });
-        toast('Status updated');
-      } catch {
-        toast('Could not update status');
+        toast(`Order status updated to ${sel.value.toUpperCase()} ✨`);
+        loadOrders();
+      } catch (err) {
+        toast('Could not update status: ' + err.message, 'error');
       }
     };
   });
 
-  // Attach print button events
+  // Print Slips
   document.querySelectorAll('.print-btn').forEach(btn => {
     btn.onclick = () => {
       const order = allOrders.find(o => o.id === btn.dataset.id);
@@ -102,82 +233,93 @@ async function loadOrders() {
     };
   });
 
-  // Attach delete button events
+  // Delete Order
   document.querySelectorAll('.delete-btn').forEach(btn => {
     btn.onclick = async () => {
       const id = btn.dataset.id;
-      if (!confirm('Are you sure you want to delete this order permanently?')) return;
+      if (!confirm('Are you sure you want to permanently delete this order record?')) return;
       try {
         await api('admin?resource=orders', { method: 'DELETE', body: JSON.stringify({ id }) });
-        toast('Order deleted');
+        toast('Order record deleted');
         loadOrders();
       } catch (err) {
-        toast('Could not delete order — ' + err.message);
+        toast('Could not delete: ' + err.message, 'error');
       }
     };
   });
 }
 
+// Filter pills interaction
+document.querySelectorAll('.filter-pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    activeFilter = pill.dataset.status;
+    filterAndRender();
+  });
+});
+
+document.getElementById('order-search').addEventListener('input', filterAndRender);
+document.getElementById('refresh-btn').onclick = loadOrders;
+
+// High-Definition Thermal & Standard Packing Slip Template
 function printShippingLabel(order) {
-  // Open a clean 3-inch thermal print window layout
-  const printWindow = window.open('', '_blank', 'width=400,height=600');
-  
+  const printWindow = window.open('', '_blank', 'width=450,height=700');
   const itemsHtml = (order.items || []).map(i => `
-    <div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 13px;">
-      <span>${i.name} (x${i.qty})</span>
+    <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed #DDD; font-size:12px;">
+      <span><strong>${i.name}</strong> × ${i.qty}</span>
       <span>₹${(i.price * i.qty).toFixed(2)}</span>
     </div>
   `).join('');
 
   printWindow.document.write(`
+    <!doctype html>
     <html>
       <head>
-        <title>Shipping Label - ${order.order_number}</title>
+        <title>Shipping Slip — #${order.order_number}</title>
         <style>
-          body { font-family: 'Poppins', Arial, sans-serif; padding: 15px; color: #000; width: 280px; margin: 0 auto; }
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 20px; color: #111; width: 340px; margin: 0 auto; line-height: 1.4; }
           .center { text-align: center; }
-          .logo { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; margin: 0 auto 8px; display: block; }
-          .divider { border-top: 1px dashed #000; margin: 10px 0; }
+          .divider { border-top: 1px solid #111; margin: 12px 0; }
           .bold { font-weight: bold; }
-          .box { border: 1px solid #000; padding: 8px; border-radius: 6px; margin-top: 10px; }
+          .box { border: 1.5px solid #111; padding: 10px; border-radius: 6px; margin: 12px 0; }
         </style>
       </head>
       <body>
-        <!-- Replace with your actual Supabase public URL for the logo -->
         <div class="center">
-          <h2 style="margin: 0; font-size: 18px; font-family: 'Baloo 2', cursive;">Loops of Love</h2>
-          <div style="font-size: 10px; letter-spacing: 1px; text-transform: uppercase;">Shipping Label</div>
+          <h2 style="margin: 0; font-size: 20px; font-family: serif;">Loops of Love</h2>
+          <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px;">Artisan Packaging & Delivery Slip</div>
         </div>
         
         <div class="divider"></div>
         
-        <div style="font-size: 12px;">
-          <div><span class="bold">Order #:</span> ${order.order_number}</div>
-          <div><span class="bold">Date:</span> ${new Date(order.created_at).toLocaleString()}</div>
+        <div style="font-size: 12px; display: flex; justify-content: space-between;">
+          <div><span class="bold">Order:</span> #${order.order_number}</div>
+          <div>${new Date(order.created_at).toLocaleDateString()}</div>
         </div>
 
         <div class="box">
-          <div class="bold" style="font-size: 11px; text-transform: uppercase; margin-bottom: 4px;">Ship To:</div>
-          <div style="font-size: 14px; font-weight: bold;">${order.customer_name}</div>
-          <div style="font-size: 12px; margin: 4px 0;">${order.address}</div>
-          <div style="font-size: 12px;"><span class="bold">Phone:</span> ${order.phone}</div>
+          <div class="bold" style="font-size: 11px; text-transform: uppercase; color: #555;">DELIVER TO:</div>
+          <div style="font-size: 15px; font-weight: bold; margin-top: 2px;">${order.customer_name}</div>
+          <div style="font-size: 12.5px; margin: 4px 0;">${order.street || order.address || ''}</div>
+          <div style="font-size: 12.5px; font-weight: 600;">${order.city || ''}, ${order.state || ''} - ${order.pincode || ''}</div>
+          <div style="font-size: 12px; margin-top: 6px;"><span class="bold">Mobile:</span> ${order.phone}</div>
         </div>
 
-        <div class="divider"></div>
-
-        <div class="bold" style="font-size: 11px; text-transform: uppercase; margin-bottom: 6px;">Items Ordered:</div>
+        <div style="font-size: 11px; font-weight: bold; text-transform: uppercase; margin-bottom: 4px;">Items in Package:</div>
         ${itemsHtml}
 
         <div class="divider"></div>
 
-        <div style="display: flex; justify-content: space-between; font-size: 14px;" class="bold">
-          <span>Total Amount:</span>
+        <div style="display: flex; justify-content: space-between; font-size: 15px; font-weight: bold; margin: 8px 0;">
+          <span>Collect on Delivery (COD):</span>
           <span>₹${Number(order.total).toFixed(2)}</span>
         </div>
 
         <div class="divider"></div>
-        <div class="center" style="font-size: 10px; margin-top: 10px;">
-          Thank you for your order! ❤️<br>Loops of Love
+        <div class="center" style="font-size: 11px; color: #444; margin-top: 14px;">
+          Handcrafted with pure love in India 🌸<br>
+          Thank you for supporting our small business!
         </div>
 
         <script>
