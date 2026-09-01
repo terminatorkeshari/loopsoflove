@@ -20,7 +20,11 @@ const API_SECRET = process.env.CLOUDINARY_API_SECRET;
  * @returns {Promise<{public_url:string, storage_path:string, width:number, height:number}>}
  */
 async function uploadToCloudinary(fileData, folder) {
-  if (!CLOUD_NAME || !API_KEY || !API_SECRET) {
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+  const apiKey = process.env.CLOUDINARY_API_KEY;
+  const apiSecret = process.env.CLOUDINARY_API_SECRET;
+
+  if (!cloudName || !apiKey || !apiSecret) {
     throw new Error('Cloudinary is not configured — set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET in Vercel.');
   }
 
@@ -30,17 +34,17 @@ async function uploadToCloudinary(fileData, folder) {
   // you send (not `file` or `api_key`), sorted alphabetically by key.
   const paramsToSign = { folder, timestamp };
   const toSign = Object.keys(paramsToSign).sort().map(k => `${k}=${paramsToSign[k]}`).join('&');
-  const signature = crypto.createHash('sha1').update(toSign + API_SECRET).digest('hex');
+  const signature = crypto.createHash('sha1').update(toSign + apiSecret).digest('hex');
 
   const body = new URLSearchParams({
     file: fileData,
-    api_key: API_KEY,
+    api_key: apiKey,
     timestamp: String(timestamp),
     folder,
     signature
   });
 
-  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
     method: 'POST',
     body
   });
