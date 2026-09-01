@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Order placed — Loops of Love</title>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<div class="announce-bar" id="announce-bar"></div>
+
+<header class="site-header">
+  <div class="wrap">
+    <a href="index.html" class="logo">Loops of Love<span class="halo-dot">.</span></a>
+    <nav class="main-nav"><a href="index.html">Home</a></nav>
+    <div class="nav-icons">
+      <a href="cart.html" aria-label="Cart"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h2l1.5 11h11L20 8H7"/><circle cx="10" cy="20" r="1"/><circle cx="17" cy="20" r="1"/></svg><span class="cart-count" data-cart-count>0</span></a>
+    </div>
+  </div>
+</header>
+
+<div class="wrap confirm-wrap">
+  <div class="halo-ring">
+    <svg viewBox="0 0 140 140" width="140" height="140">
+      <circle cx="70" cy="70" r="64" stroke="#C6A15B" stroke-width="1" stroke-dasharray="2 8" fill="none" opacity="0.6"/>
+      <circle cx="70" cy="70" r="46" fill="#14132B"/>
+      <path d="M52 71 L64 84 L90 56" stroke="#E7D3A6" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+  <h1>Order placed</h1>
+  <p class="order-no" id="order-no"></p>
+  <p style="max-width:420px; margin:20px auto 34px; color:rgba(20,19,43,0.6);">
+    Thank you — we've received your order and will confirm delivery by phone shortly. Payment is Cash on Delivery.
+  </p>
+  <a href="index.html" class="btn btn-gold">Continue shopping</a>
+</div>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div>© <span id="year"></span> Loops of Love. All rights reserved.</div>
+  </div>
+</footer>
+
+<script type="module">
+import { renderAnnouncementBar } from './assets/js/app.js';
+renderAnnouncementBar();
+
+document.getElementById('year').textContent = new Date().getFullYear();
+const params = new URLSearchParams(location.search);
+const orderNo = params.get('order');
+document.getElementById('order-no').textContent = orderNo ? `Order #${orderNo}` : '';
+</script>
+</body>
+</html>

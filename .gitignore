@@ -1,0 +1,4 @@
+.env
+.env.txt
+.netlify
+node_modules

@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Login — Loops of Love</title>
+<link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body style="background:var(--berry); min-height:100vh;">
+
+<div class="form-card" style="margin-top:100px;">
+  <h2>Admin Panel</h2>
+  <p class="form-sub">Loops of Love</p>
+  <div id="form-error" class="form-error"></div>
+  <form id="admin-login-form">
+    <div class="field"><label>Email</label><input type="email" id="a-email" required></div>
+    <div class="field"><label>Password</label><input type="password" id="a-password" required></div>
+    <button class="btn btn-gold btn-block" type="submit">Log in</button>
+  </form>
+</div>
+
+<script type="module">
+import { supabase, api } from '/admin/assets/js/admin.js';
+
+const errorBox = document.getElementById('form-error');
+
+document.getElementById('admin-login-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  errorBox.style.display = 'none';
+  const email = document.getElementById('a-email').value.trim();
+  const password = document.getElementById('a-password').value;
+
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) {
+    errorBox.textContent = 'Incorrect email or password.';
+    errorBox.style.display = 'block';
+    return;
+  }
+
+  // Being logged in isn't enough — confirm this email is on the
+  // ADMIN_EMAILS allowlist server-side before letting them in.
+  try {
+    const { user } = await api('admin-me');
+    if (!user || !user.isAdmin) {
+      await supabase.auth.signOut();
+      errorBox.textContent = 'This account does not have admin access.';
+      errorBox.style.display = 'block';
+      return;
+    }
+    window.location.href = 'dashboard.html';
+  } catch (err) {
+    errorBox.textContent = err.message || 'Something went wrong verifying admin access.';
+    errorBox.style.display = 'block';
+  }
+});
+</script>
+</body>
+</html>

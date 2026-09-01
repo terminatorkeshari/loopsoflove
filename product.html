@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Product — Loops of Love</title>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<div class="announce-bar" id="announce-bar"></div>
+
+<header class="site-header">
+  <div class="wrap">
+    <a href="index.html" class="logo">Loops of Love<span class="halo-dot">.</span></a>
+    <nav class="main-nav">
+      <a href="index.html">Home</a>
+      <a href="index.html#shop">Shop</a>
+      <a href="index.html#about">About</a>
+      <a href="index.html#contact">Contact</a>
+    </nav>
+    <div class="nav-icons">
+      <a href="login.html" aria-label="Account"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.5-7 8-7s8 3 8 7"/></svg></a>
+      <a href="cart.html" aria-label="Cart"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h2l1.5 11h11L20 8H7"/><circle cx="10" cy="20" r="1"/><circle cx="17" cy="20" r="1"/></svg><span class="cart-count" data-cart-count>0</span></a>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="pd-grid" id="pd-root">
+    <div class="pd-media"><img id="pd-image" alt=""></div>
+    <div class="pd-info">
+      <span class="eyebrow" id="pd-category"></span>
+      <h1 class="pd-name" id="pd-name"></h1>
+      <div class="pd-price" id="pd-price"></div>
+      <p class="pd-desc" id="pd-desc"></p>
+
+      <div class="qty-row">
+        <div class="qty-box">
+          <button type="button" id="qty-minus">–</button>
+          <input type="text" id="qty-input" value="1" inputmode="numeric">
+          <button type="button" id="qty-plus">+</button>
+        </div>
+        <button class="btn btn-gold" id="add-btn">Add to cart</button>
+      </div>
+      <div class="stock-note" id="stock-note"></div>
+    </div>
+  </div>
+  <div class="empty-state" id="pd-empty" style="display:none;">
+    <h3>We couldn't find that piece</h3>
+    <p><a href="index.html" style="color:var(--pink-deep);">Back to the collection →</a></p>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div>© <span id="year"></span> Loops of Love. All rights reserved.</div>
+    <div>Questions? Reach us any time — we reply personally.</div>
+  </div>
+</footer>
+
+<script type="module">
+import { fetchProduct, effectivePrice, formatPrice, addToCart, toast, renderBlockNotice, renderAnnouncementBar } from './assets/js/app.js';
+
+renderAnnouncementBar();
+
+document.getElementById('year').textContent = new Date().getFullYear();
+renderBlockNotice();
+
+const params = new URLSearchParams(location.search);
+const id = params.get('id');
+let currentProduct = null;
+
+async function load() {
+  if (!id) return showEmpty();
+  try {
+    currentProduct = await fetchProduct(id);
+    render(currentProduct);
+  } catch {
+    showEmpty();
+  }
+}
+
+function showEmpty() {
+  document.getElementById('pd-root').style.display = 'none';
+  document.getElementById('pd-empty').style.display = 'block';
+}
+
+function render(p) {
+  document.title = `${p.name} — Loops of Love`;
+  document.getElementById('pd-image').src = p.image_url || 'https://images.unsplash.com/photo-1611652022419-a9419f74343d?q=80&w=800&auto=format&fit=crop';
+  document.getElementById('pd-category').textContent = p.category || 'Loops of Love';
+  document.getElementById('pd-name').textContent = p.name;
+  document.getElementById('pd-desc').textContent = p.description || '';
+
+  const price = effectivePrice(p);
+  document.getElementById('pd-price').innerHTML = p.discount_percent > 0
+    ? `${formatPrice(price)} <span class="price-strike">${formatPrice(p.price)}</span>`
+    : formatPrice(price);
+
+  const stockNote = document.getElementById('stock-note');
+  const addBtn = document.getElementById('add-btn');
+  if (p.stock <= 0) {
+    stockNote.textContent = 'Currently sold out';
+    stockNote.classList.add('stock-low');
+    addBtn.disabled = true;
+    addBtn.textContent = 'Sold out';
+  } else if (p.stock <= 3) {
+    stockNote.textContent = `Only ${p.stock} left`;
+    stockNote.classList.add('stock-low');
+  } else {
+    stockNote.textContent = 'In stock, ready to ship';
+  }
+}
+
+document.getElementById('qty-minus').onclick = () => {
+  const el = document.getElementById('qty-input');
+  el.value = Math.max(1, parseInt(el.value || 1) - 1);
+};
+document.getElementById('qty-plus').onclick = () => {
+  const el = document.getElementById('qty-input');
+  el.value = Math.min(currentProduct?.stock || 99, parseInt(el.value || 1) + 1);
+};
+
+document.getElementById('add-btn').onclick = () => {
+  if (!currentProduct) return;
+  const qty = Math.max(1, parseInt(document.getElementById('qty-input').value || 1));
+  addToCart(currentProduct, qty);
+  toast(`Added ${currentProduct.name} to cart`);
+};
+
+load();
+</script>
+</body>
+</html>

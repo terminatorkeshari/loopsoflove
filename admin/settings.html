@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>System Settings — Admin</title>
+<link rel="stylesheet" href="../assets/css/style.css">
+<link rel="stylesheet" href="assets/admin.css">
+</head>
+<body>
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <span class="logo">Loops<span class="halo-dot"> of Love</span></span>
+    <nav class="admin-nav" id="admin-nav"></nav>
+    <div class="signout"><button id="signout-btn">Sign out</button></div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar"><h1>System Settings</h1></div>
+
+    <div class="panel">
+      <h2>Login & security</h2>
+      <p class="panel-desc">Change the password for this admin account.</p>
+      <form id="password-form" class="form-grid">
+        <div class="field"><label>New password</label><input type="password" id="new-password" minlength="6" required></div>
+        <div class="field"><label>Confirm new password</label><input type="password" id="confirm-password" minlength="6" required></div>
+        <div style="grid-column: 1 / -1;"><button class="btn btn-gold btn-sm" type="submit">Update password</button></div>
+      </form>
+    </div>
+
+    <div class="panel">
+      <h2>Announcement bar</h2>
+      <p class="panel-desc">The scrolling strip at the very top of every page (offers, shipping info, etc).</p>
+      <form id="announce-form" class="form-grid">
+        <div class="field" style="grid-column: 1 / -1;"><label>Text</label><input type="text" id="announce-input" placeholder="e.g. Flat 15% off on orders above ₹999"></div>
+        <div style="grid-column: 1 / -1;"><button class="btn btn-gold btn-sm" type="submit">Save</button></div>
+      </form>
+    </div>
+
+    <div class="panel">
+      <h2>Store domain</h2>
+      <p class="panel-desc">The domain your friend's storefront is live on. This is a record only — connect the actual domain in your hosting provider (Netlify).</p>
+      <form id="domain-form" class="form-grid">
+        <div class="field"><label>Domain</label><input type="text" id="domain-input" placeholder="loopsoflove.com"></div>
+        <div style="grid-column: 1 / -1;"><button class="btn btn-gold btn-sm" type="submit">Save</button></div>
+      </form>
+    </div>
+
+    <div class="panel">
+      <h2>WhatsApp order notifications</h2>
+      <p class="panel-desc">The number that receives an instant WhatsApp message for every new order. Requires the WhatsApp Cloud API to be connected — see the deployment README for setup.</p>
+      <form id="whatsapp-form" class="form-grid">
+        <div class="field"><label>WhatsApp number</label><input type="tel" id="whatsapp-input" placeholder="+91 98765 43210"></div>
+        <div style="grid-column: 1 / -1;"><button class="btn btn-gold btn-sm" type="submit">Save</button></div>
+      </form>
+    </div>
+  </main>
+</div>
+
+<script type="module">
+import { requireAdmin, renderSidebar, api, supabase, toast } from './assets/js/admin.js';
+
+const admin = await requireAdmin();
+if (admin) {
+  renderSidebar('settings.html', admin.email || 'Admin');
+  loadSettings();
+}
+
+async function loadSettings() {
+  const { settings } = await api('settings');
+  document.getElementById('domain-input').value = settings.store_domain || '';
+  document.getElementById('whatsapp-input').value = settings.whatsapp_number || '';
+  document.getElementById('announce-input').value = settings.announcement_text || '';
+}
+
+async function saveSetting(key, value, successMsg) {
+  try {
+    await api('admin?resource=settings', { method: 'PUT', body: JSON.stringify({ key, value }) });
+    toast(successMsg);
+  } catch (err) {
+    toast('Could not save — ' + err.message);
+  }
+}
+
+document.getElementById('announce-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  saveSetting('announcement_text', document.getElementById('announce-input').value.trim(), 'Announcement bar updated');
+});
+
+document.getElementById('domain-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  saveSetting('store_domain', document.getElementById('domain-input').value.trim(), 'Domain saved');
+});
+
+document.getElementById('whatsapp-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  saveSetting('whatsapp_number', document.getElementById('whatsapp-input').value.trim(), 'WhatsApp number saved');
+});
+
+document.getElementById('password-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const pw = document.getElementById('new-password').value;
+  const confirm = document.getElementById('confirm-password').value;
+  if (pw !== confirm) { toast('Passwords do not match'); return; }
+  // Password changes go straight through Supabase now — it's the
+  // system that owns this account's credentials.
+  const { error } = await supabase.auth.updateUser({ password: pw });
+  if (error) {
+    toast('Could not update password — ' + error.message);
+    return;
+  }
+  toast('Password updated');
+  e.target.reset();
+});
+</script>
+</body>
+</html>

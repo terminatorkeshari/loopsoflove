@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coupon Codes — Admin</title>
+<link rel="stylesheet" href="../assets/css/style.css">
+<link rel="stylesheet" href="assets/admin.css">
+</head>
+<body>
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <span class="logo">Loops<span class="halo-dot"> of Love</span></span>
+    <nav class="admin-nav" id="admin-nav"></nav>
+    <div class="signout"><button id="signout-btn">Sign out</button></div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h1>Coupon Codes</h1>
+      <button class="btn btn-gold btn-sm" id="new-coupon-btn">+ New coupon</button>
+    </div>
+
+    <div class="panel">
+      <p class="panel-desc">Codes are never listed publicly on the storefront — customers can only check one by typing it in at checkout, so codes can't be browsed or guessed from the site.</p>
+      <table class="admin-table">
+        <thead><tr><th>Code</th><th>Discount</th><th>Min. order</th><th>Uses</th><th>Status</th><th></th></tr></thead>
+        <tbody id="coupons-body"></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<div class="modal-backdrop" id="modal-backdrop">
+  <div class="modal">
+    <h3>New coupon code</h3>
+    <form id="coupon-form">
+      <div class="field"><label>Code</label><input type="text" id="cp-code" required placeholder="e.g. WELCOME10" style="text-transform:uppercase;"></div>
+      <div class="form-grid">
+        <div class="field"><label>Discount type</label>
+          <select id="cp-type"><option value="percent">Percentage %</option><option value="flat">Flat ₹ amount</option></select>
+        </div>
+        <div class="field"><label>Discount value</label><input type="number" id="cp-value" min="0" step="0.01" required></div>
+        <div class="field"><label>Minimum order ₹ (optional)</label><input type="number" id="cp-min" min="0" step="0.01" value="0"></div>
+        <div class="field"><label>Max uses (blank = unlimited)</label><input type="number" id="cp-max" min="1" step="1"></div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-gold">Create coupon</button>
+        <button type="button" class="btn" id="cancel-btn">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script type="module">
+import { requireAdmin, renderSidebar, api, formatPrice, toast } from './assets/js/admin.js';
+
+const admin = await requireAdmin();
+if (admin) {
+  renderSidebar('coupons.html', admin.email || 'Admin');
+  loadCoupons();
+}
+
+async function loadCoupons() {
+  const { coupons } = await api('admin?resource=coupons');
+  document.getElementById('coupons-body').innerHTML = (coupons || []).map(c => `
+    <tr>
+      <td><strong>${c.code}</strong></td>
+      <td>${c.discount_type === 'percent' ? c.discount_value + '%' : formatPrice(c.discount_value)}</td>
+      <td>${c.min_order_amount > 0 ? formatPrice(c.min_order_amount) : '—'}</td>
+      <td>${c.times_used}${c.max_uses ? ' / ' + c.max_uses : ''}</td>
+      <td>${c.active ? '<span class="pill pill-green">Active</span>' : '<span class="pill pill-gray">Off</span>'}</td>
+      <td><button class="btn btn-sm toggle-btn" data-id="${c.id}" data-active="${c.active}">${c.active ? 'Turn off' : 'Turn on'}</button></td>
+    </tr>`).join('') || `<tr><td colspan="6">No coupons yet.</td></tr>`;
+
+  document.querySelectorAll('.toggle-btn').forEach(btn => {
+    btn.onclick = async () => {
+      const nowActive = btn.dataset.active === 'true';
+      await api('admin?resource=coupons', { method: 'PUT', body: JSON.stringify({ id: btn.dataset.id, active: !nowActive }) });
+      toast(nowActive ? 'Coupon turned off' : 'Coupon turned on');
+      loadCoupons();
+    };
+  });
+}
+
+const backdrop = document.getElementById('modal-backdrop');
+document.getElementById('new-coupon-btn').onclick = () => backdrop.classList.add('show');
+document.getElementById('cancel-btn').onclick = () => backdrop.classList.remove('show');
+
+document.getElementById('coupon-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const maxUsesRaw = document.getElementById('cp-max').value;
+  try {
+    await api('admin?resource=coupons', {
+      method: 'POST',
+      body: JSON.stringify({
+        code: document.getElementById('cp-code').value.trim().toUpperCase(),
+        discount_type: document.getElementById('cp-type').value,
+        discount_value: parseFloat(document.getElementById('cp-value').value),
+        min_order_amount: parseFloat(document.getElementById('cp-min').value) || 0,
+        max_uses: maxUsesRaw ? parseInt(maxUsesRaw) : null,
+      }),
+    });
+    toast('Coupon created');
+    backdrop.classList.remove('show');
+    e.target.reset();
+    loadCoupons();
+  } catch (err) {
+    toast('Could not save — ' + err.message);
+  }
+});
+</script>
+</body>
+</html>

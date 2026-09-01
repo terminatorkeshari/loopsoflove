@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checkout — Loops of Love</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+  /* Quick styling for the state dropdown and side-by-side fields */
+  select.form-select { width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: 14px; background: white; color: var(--ink); }
+  .field-row { display: flex; gap: 12px; margin-bottom: 16px; }
+  .field-row .field { margin-bottom: 0; flex: 1; }
+</style>
+</head>
+<body>
+
+<div class="announce-bar" id="announce-bar"></div>
+
+<header class="site-header">
+  <div class="wrap">
+    <a href="index.html" class="logo">Loops of Love<span class="halo-dot">.</span></a>
+    <nav class="main-nav">
+      <a href="index.html">Home</a>
+      <a href="index.html#shop">Shop</a>
+    </nav>
+    <div class="nav-icons">
+      <a href="cart.html" aria-label="Cart"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h2l1.5 11h11L20 8H7"/><circle cx="10" cy="20" r="1"/><circle cx="17" cy="20" r="1"/></svg><span class="cart-count" data-cart-count>0</span></a>
+    </div>
+  </div>
+</header>
+
+<div class="wrap" style="max-width:640px; padding:60px 28px 100px;">
+  <h1 style="font-size:34px; margin-bottom:6px;">Checkout</h1>
+  <p style="color:rgba(20,19,43,0.55); margin-bottom:30px;">Payment method: <strong>Cash on Delivery</strong></p>
+
+  <div id="form-error" class="form-error"></div>
+
+  <form id="checkout-form">
+    <div class="field">
+      <label>Full name</label>
+      <input type="text" id="c-name" required>
+    </div>
+    
+    <div class="field">
+      <label>Mobile number (10 Digits)</label>
+      <input type="tel" id="c-phone" placeholder="9876543210" maxlength="10" required>
+    </div>
+    
+    <div class="field" style="margin-top: 24px;">
+      <label>House/Flat No. & Street Name</label>
+      <input type="text" id="c-street" placeholder="123 Main Market Road" required>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>City / Town</label>
+        <input type="text" id="c-city" placeholder="City" required>
+      </div>
+      <div class="field">
+        <label>PIN Code</label>
+        <input type="text" id="c-pincode" placeholder="123456" maxlength="6" required>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>State / Union Territory</label>
+      <select id="c-state" class="form-select" required>
+        <option value="" disabled selected>Select State...</option>
+        <optgroup label="States">
+          <option value="Andhra Pradesh">Andhra Pradesh</option>
+          <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+          <option value="Assam">Assam</option>
+          <option value="Bihar">Bihar</option>
+          <option value="Chhattisgarh">Chhattisgarh</option>
+          <option value="Goa">Goa</option>
+          <option value="Gujarat">Gujarat</option>
+          <option value="Haryana">Haryana</option>
+          <option value="Himachal Pradesh">Himachal Pradesh</option>
+          <option value="Jharkhand">Jharkhand</option>
+          <option value="Karnataka">Karnataka</option>
+          <option value="Kerala">Kerala</option>
+          <option value="Madhya Pradesh">Madhya Pradesh</option>
+          <option value="Maharashtra">Maharashtra</option>
+          <option value="Manipur">Manipur</option>
+          <option value="Meghalaya">Meghalaya</option>
+          <option value="Mizoram">Mizoram</option>
+          <option value="Nagaland">Nagaland</option>
+          <option value="Odisha">Odisha</option>
+          <option value="Punjab">Punjab</option>
+          <option value="Rajasthan">Rajasthan</option>
+          <option value="Sikkim">Sikkim</option>
+          <option value="Tamil Nadu">Tamil Nadu</option>
+          <option value="Telangana">Telangana</option>
+          <option value="Tripura">Tripura</option>
+          <option value="Uttar Pradesh">Uttar Pradesh</option>
+          <option value="Uttarakhand">Uttarakhand</option>
+          <option value="West Bengal">West Bengal</option>
+        </optgroup>
+        <optgroup label="Union Territories">
+          <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
+          <option value="Chandigarh">Chandigarh</option>
+          <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu</option>
+          <option value="Delhi">Delhi</option>
+          <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+          <option value="Ladakh">Ladakh</option>
+          <option value="Lakshadweep">Lakshadweep</option>
+          <option value="Puducherry">Puducherry</option>
+        </optgroup>
+      </select>
+    </div>
+
+    <div style="margin:26px 0; padding:18px; background:var(--pink-soft); border-radius:14px;">
+      <div id="order-lines" style="font-family:var(--font-body); font-size:13px;"></div>
+      <div class="summary-row" id="discount-row" style="display:none; color:var(--berry); font-weight:600;">
+        <span>Discount <span id="applied-coupon-label"></span></span><span id="order-discount"></span>
+      </div>
+      <div class="summary-row total" style="border-top:1px solid var(--line); margin-top:10px; padding-top:12px;">
+        <span>Total (COD)</span><span id="order-total"></span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Coupon code</label>
+      <div class="coupon-row">
+        <input type="text" id="coupon-input" placeholder="Enter code" style="border:2px solid var(--pink-soft); border-radius:999px; color:var(--ink);">
+        <button type="button" class="btn btn-sm" id="apply-coupon-btn" style="border-radius:999px;">Apply</button>
+      </div>
+      <div id="coupon-message" style="font-size:12px; color:var(--berry); display:none;"></div>
+    </div>
+
+    <button class="btn btn-gold btn-block" type="submit" id="place-order-btn">Place order</button>
+  </form>
+</div>
+
+<script type="module">
+import { fetchProductsByIds, effectivePrice, formatPrice, getCart, clearCart, requireLogin, getCurrentProfile, renderAnnouncementBar, validateCoupon, placeOrder } from './assets/js/app.js';
+
+renderAnnouncementBar();
+
+const errorBox = document.getElementById('form-error');
+function showError(msg) { errorBox.textContent = msg; errorBox.style.display = 'block'; }
+
+let cartItems = [];
+let subtotal = 0;
+let appliedCoupon = null;
+
+function renderTotals() {
+  const discount = appliedCoupon ? appliedCoupon.discount_amount : 0;
+  document.getElementById('order-total').textContent = formatPrice(subtotal - discount);
+  const discountRow = document.getElementById('discount-row');
+  if (appliedCoupon) {
+    discountRow.style.display = 'flex';
+    document.getElementById('applied-coupon-label').textContent = `(${appliedCoupon.code})`;
+    document.getElementById('order-discount').textContent = '-' + formatPrice(discount);
+  } else {
+    discountRow.style.display = 'none';
+  }
+}
+
+async function init() {
+  const user = await requireLogin('checkout.html');
+  if (!user) return;
+
+  const cart = getCart();
+  if (cart.length === 0) {
+    document.getElementById('checkout-form').innerHTML = `<p>Your cart is empty. <a href="index.html" style="color:var(--pink-deep);">Go shopping →</a></p>`;
+    return;
+  }
+
+  const profile = await getCurrentProfile();
+  if (profile) {
+    document.getElementById('c-name').value = profile.user_metadata?.full_name || '';
+    document.getElementById('c-phone').value = profile.user_metadata?.phone || '';
+  }
+
+  const ids = cart.map(i => i.product_id);
+  const products = await fetchProductsByIds(ids);
+
+  const lines = cart.map(item => {
+    const p = products.find(p => p.id === item.product_id);
+    if (!p) return '';
+    const price = effectivePrice(p);
+    const line = price * item.qty;
+    subtotal += line;
+    cartItems.push({ product_id: p.id, qty: item.qty });
+    return `<div style="display:flex; justify-content:space-between; padding:4px 0;"><span>${p.name} × ${item.qty}</span><span>${formatPrice(line)}</span></div>`;
+  }).join('');
+
+  document.getElementById('order-lines').innerHTML = lines;
+  renderTotals();
+}
+
+document.getElementById('apply-coupon-btn').addEventListener('click', async () => {
+  const code = document.getElementById('coupon-input').value.trim();
+  const msg = document.getElementById('coupon-message');
+  msg.style.display = 'none';
+  if (!code) return;
+
+  let data;
+  try {
+    data = await validateCoupon(code, subtotal);
+  } catch (err) {
+    data = { valid: false, message: err.message };
+  }
+  if (!data || !data.valid) {
+    appliedCoupon = null;
+    msg.textContent = (data && data.message) || 'Could not validate that code.';
+    msg.style.display = 'block';
+    renderTotals();
+    return;
+  }
+
+  appliedCoupon = { code: data.code, discount_amount: data.discount_amount };
+  msg.textContent = `"${data.code}" applied — you saved ${formatPrice(data.discount_amount)}!`;
+  msg.style.color = '#216b41';
+  msg.style.display = 'block';
+  renderTotals();
+});
+
+document.getElementById('checkout-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  errorBox.style.display = 'none';
+  const btn = document.getElementById('place-order-btn');
+  btn.disabled = true;
+  btn.textContent = 'Placing order…';
+
+  try {
+    // Send the perfectly structured data back to our newly updated backend!
+    const data = await placeOrder({
+      customer_name: document.getElementById('c-name').value.trim(),
+      phone: document.getElementById('c-phone').value.trim(),
+      street: document.getElementById('c-street').value.trim(),
+      city: document.getElementById('c-city').value.trim(),
+      state: document.getElementById('c-state').value.trim(),
+      pincode: document.getElementById('c-pincode').value.trim(),
+      items: cartItems,
+      coupon_code: appliedCoupon ? appliedCoupon.code : null
+    });
+    clearCart();
+    window.location.href = `order-confirmation.html?order=${data.order_number}`;
+  } catch (err) {
+    showError(err.message || 'Something went wrong placing your order. Please try again.');
+    btn.disabled = false;
+    btn.textContent = 'Place order';
+  }
+});
+
+init();
+</script>
+</body>
+</html>

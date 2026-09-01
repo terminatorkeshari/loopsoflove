@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Discounts & Offers — Admin</title>
+<link rel="stylesheet" href="../assets/css/style.css">
+<link rel="stylesheet" href="assets/admin.css">
+</head>
+<body>
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <span class="logo">Loops<span class="halo-dot"> of Love</span></span>
+    <nav class="admin-nav" id="admin-nav"></nav>
+    <div class="signout"><button id="signout-btn">Sign out</button></div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h1>Discounts & Offers</h1>
+      <button class="btn btn-gold btn-sm" id="new-discount-btn">+ New discount</button>
+    </div>
+
+    <div class="panel">
+      <p class="panel-desc">A discount here sets the <strong>discount % on individual products</strong> directly (Products & Stock page). This log keeps a record of active campaigns so it's easy to see what's currently running and switch it off later.</p>
+      <table class="admin-table">
+        <thead><tr><th>Campaign</th><th>Applies to</th><th>Discount</th><th>Status</th><th></th></tr></thead>
+        <tbody id="discounts-body"></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<div class="modal-backdrop" id="modal-backdrop">
+  <div class="modal">
+    <h3>New discount campaign</h3>
+    <form id="discount-form">
+      <div class="field"><label>Campaign name</label><input type="text" id="d-name" required placeholder="e.g. Diwali Sale"></div>
+      <div class="form-grid">
+        <div class="field"><label>Discount %</label><input type="number" id="d-percent" min="0" max="100" required></div>
+        <div class="field"><label>Applies to</label>
+          <select id="d-applies">
+            <option value="all">All products</option>
+            <option value="category">A category</option>
+          </select>
+        </div>
+      </div>
+      <div class="field" id="d-target-field" style="display:none;"><label>Category name</label><input type="text" id="d-target" placeholder="e.g. Necklaces"></div>
+      <p class="panel-desc" style="margin-top:4px;">Saving this will also apply the % to matching products immediately.</p>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-gold">Create & apply</button>
+        <button type="button" class="btn" id="cancel-btn">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script type="module">
+import { requireAdmin, renderSidebar, api, toast } from './assets/js/admin.js';
+
+const admin = await requireAdmin();
+if (admin) {
+  renderSidebar('discounts.html', admin.email || 'Admin');
+  loadDiscounts();
+}
+
+async function loadDiscounts() {
+  const { discounts } = await api('admin?resource=discounts');
+  document.getElementById('discounts-body').innerHTML = (discounts || []).map(d => `
+    <tr>
+      <td>${d.name}</td>
+      <td>${d.applies_to === 'all' ? 'All products' : `Category: ${d.target}`}</td>
+      <td>${d.percent}%</td>
+      <td>${d.active ? '<span class="pill pill-green">Active</span>' : '<span class="pill pill-gray">Ended</span>'}</td>
+      <td>${d.active ? `<button class="btn btn-sm end-btn" data-id="${d.id}">End campaign</button>` : ''}</td>
+    </tr>`).join('') || `<tr><td colspan="5">No discount campaigns yet.</td></tr>`;
+
+  document.querySelectorAll('.end-btn').forEach(btn => {
+    btn.onclick = async () => {
+      await api('admin?resource=discounts', { method: 'PUT', body: JSON.stringify({ id: btn.dataset.id }) });
+      toast('Campaign ended');
+      loadDiscounts();
+    };
+  });
+}
+
+const backdrop = document.getElementById('modal-backdrop');
+document.getElementById('new-discount-btn').onclick = () => backdrop.classList.add('show');
+document.getElementById('cancel-btn').onclick = () => backdrop.classList.remove('show');
+document.getElementById('d-applies').onchange = (e) => {
+  document.getElementById('d-target-field').style.display = e.target.value === 'category' ? 'block' : 'none';
+};
+
+document.getElementById('discount-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const applies_to = document.getElementById('d-applies').value;
+  const target = document.getElementById('d-target').value.trim();
+  const percent = parseFloat(document.getElementById('d-percent').value);
+  const name = document.getElementById('d-name').value.trim();
+
+  try {
+    await api('admin?resource=discounts', { method: 'POST', body: JSON.stringify({ name, percent, applies_to, target }) });
+    toast('Discount created and applied');
+    backdrop.classList.remove('show');
+    e.target.reset();
+    loadDiscounts();
+  } catch (err) {
+    toast('Could not save — ' + err.message);
+  }
+});
+</script>
+</body>
+</html>

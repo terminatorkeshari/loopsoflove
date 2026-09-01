@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Products & Stock — Admin</title>
+<link rel="stylesheet" href="../assets/css/style.css">
+<link rel="stylesheet" href="assets/admin.css">
+</head>
+<body>
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <span class="logo">Loops<span class="halo-dot"> of Love</span></span>
+    <nav class="admin-nav" id="admin-nav"></nav>
+    <div class="signout"><button id="signout-btn">Sign out</button></div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h1>Products & Stock</h1>
+      <button class="btn btn-gold btn-sm" id="new-product-btn">+ New item</button>
+    </div>
+
+    <div class="panel">
+      <table class="admin-table">
+        <thead><tr><th></th><th>Name</th><th>Category</th><th>Price</th><th>Discount</th><th>Stock</th><th>Status</th><th></th></tr></thead>
+        <tbody id="products-body"></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<div class="modal-backdrop" id="modal-backdrop">
+  <div class="modal">
+    <h3 id="modal-title">New item</h3>
+    <form id="product-form">
+      <input type="hidden" id="p-id">
+      <div class="field"><label>Name</label><input type="text" id="p-name" required></div>
+      <div class="field"><label>Description</label><textarea id="p-description" rows="3"></textarea></div>
+      <div class="form-grid">
+        <div class="field"><label>Category</label><input type="text" id="p-category" placeholder="Rings, Necklaces…"></div>
+        
+        <!-- Upgraded Image Uploader Field -->
+        <div class="field">
+          <label>Product Image</label>
+          <input type="file" id="p-image-file" accept="image/*" style="padding: 8px; font-size: 13px;">
+          <input type="hidden" id="p-image">
+          <div id="upload-status" style="font-size: 12px; color: var(--berry); margin-top: 4px;"></div>
+        </div>
+
+        <div class="field"><label>Price (₹)</label><input type="number" id="p-price" step="0.01" min="0" required></div>
+        <div class="field"><label>Discount %</label><input type="number" id="p-discount" step="1" min="0" max="100" value="0"></div>
+        <div class="field"><label>Stock count</label><input type="number" id="p-stock" step="1" min="0" required></div>
+        <div class="field"><label>Status</label>
+          <select id="p-active"><option value="true">Active (visible in shop)</option><option value="false">Hidden</option></select>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-gold" id="save-btn">Save item</button>
+        <button type="button" class="btn" id="cancel-btn">Cancel</button>
+        <button type="button" class="btn btn-danger" id="delete-btn" style="display:none; margin-left:auto;">Delete</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script type="module">
+import { requireAdmin, renderSidebar, api, formatPrice, toast } from './assets/js/admin.js';
+
+const admin = await requireAdmin();
+let allProducts = [];
+if (admin) {
+  renderSidebar('products.html', admin.email || 'Admin');
+  loadProducts();
+}
+
+async function loadProducts() {
+  const { products } = await api('admin?resource=products');
+  allProducts = products || [];
+  document.getElementById('products-body').innerHTML = (products || []).map(p => `
+    <tr>
+      <td><img class="thumb" src="${p.image_url || ''}" alt="" style="width:40px; height:40px; object-fit:cover; border-radius:6px;"></td>
+      <td>${p.name}</td>
+      <td>${p.category || '—'}</td>
+      <td>${formatPrice(p.price)}</td>
+      <td>${p.discount_percent > 0 ? p.discount_percent + '%' : '—'}</td>
+      <td>${p.stock <= 3 ? `<span class="pill pill-red">${p.stock} left</span>` : p.stock}</td>
+      <td>${p.active ? '<span class="pill pill-green">Active</span>' : '<span class="pill pill-gray">Hidden</span>'}</td>
+      <td><button class="btn btn-sm edit-btn" data-id="${p.id}">Edit</button></td>
+    </tr>`).join('') || `<tr><td colspan="8">No products yet — add your first item.</td></tr>`;
+
+  document.querySelectorAll('.edit-btn').forEach(btn => {
+    btn.onclick = () => openModal(allProducts.find(p => p.id === btn.dataset.id));
+  });
+}
+
+const backdrop = document.getElementById('modal-backdrop');
+const form = document.getElementById('product-form');
+const deleteBtn = document.getElementById('delete-btn');
+const saveBtn = document.getElementById('save-btn');
+
+function openModal(product) {
+  document.getElementById('modal-title').textContent = product ? 'Edit item' : 'New item';
+  document.getElementById('p-id').value = product?.id || '';
+  document.getElementById('p-name').value = product?.name || '';
+  document.getElementById('p-description').value = product?.description || '';
+  document.getElementById('p-category').value = product?.category || '';
+  
+  // Reset the file input and handle existing images
+  document.getElementById('p-image-file').value = '';
+  document.getElementById('p-image').value = product?.image_url || '';
+  document.getElementById('upload-status').textContent = product?.image_url ? '(Leave blank to keep existing image)' : '';
+  
+  document.getElementById('p-price').value = product?.price ?? '';
+  document.getElementById('p-discount').value = product?.discount_percent ?? 0;
+  document.getElementById('p-stock').value = product?.stock ?? '';
+  document.getElementById('p-active').value = String(product?.active ?? true);
+  deleteBtn.style.display = product ? 'inline-flex' : 'none';
+  backdrop.classList.add('show');
+}
+
+document.getElementById('new-product-btn').onclick = () => openModal(null);
+document.getElementById('cancel-btn').onclick = () => backdrop.classList.remove('show');
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const id = document.getElementById('p-id').value;
+  const fileInput = document.getElementById('p-image-file');
+  let finalImageUrl = document.getElementById('p-image').value;
+
+  try {
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Uploading...';
+
+    // If the user selected a new file, upload it to Supabase first
+    if (fileInput.files.length > 0) {
+      const file = fileInput.files[0];
+      const fileExt = file.name.split('.').pop();
+      const fileName = `product-${Date.now()}.${fileExt}`;
+      
+      const SUPABASE_URL = 'https://wjwkrdnckdnolvxrebjz.supabase.co';
+      const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indqd2tyZG5ja2Rub2x2eHJlYmp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MjkzODgsImV4cCI6MjEwMjEwNTM4OH0.-FGvquX2sACyUevQTm1ucrTHDFwDfnWCWXEb69IotTQ';
+
+      document.getElementById('upload-status').textContent = 'Sending to cloud...';
+
+      const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/products/${fileName}`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': file.type
+        },
+        body: file
+      });
+
+      if (!uploadRes.ok) throw new Error('Failed to upload image to Supabase');
+
+      // Grab the permanent public URL for the new image
+      finalImageUrl = `${SUPABASE_URL}/storage/v1/object/public/products/${fileName}`;
+    }
+
+    saveBtn.textContent = 'Saving data...';
+
+    const payload = {
+      name: document.getElementById('p-name').value.trim(),
+      description: document.getElementById('p-description').value.trim(),
+      category: document.getElementById('p-category').value.trim(),
+      image_url: finalImageUrl,
+      price: parseFloat(document.getElementById('p-price').value),
+      discount_percent: parseFloat(document.getElementById('p-discount').value) || 0,
+      stock: parseInt(document.getElementById('p-stock').value),
+      active: document.getElementById('p-active').value === 'true'
+    };
+
+    if (id) await api('admin?resource=products', { method: 'PUT', body: JSON.stringify({ id, ...payload }) });
+    else await api('admin?resource=products', { method: 'POST', body: JSON.stringify(payload) });
+    
+    toast('Item saved');
+    backdrop.classList.remove('show');
+    loadProducts();
+  } catch (err) {
+    toast('Could not save — ' + err.message);
+    document.getElementById('upload-status').textContent = 'Upload failed. Try again.';
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Save item';
+  }
+});
+
+deleteBtn.onclick = async () => {
+  const id = document.getElementById('p-id').value;
+  if (!id || !confirm('Delete this item permanently?')) return;
+  try {
+    await api('admin?resource=products', { method: 'DELETE', body: JSON.stringify({ id }) });
+    toast('Item deleted');
+    backdrop.classList.remove('show');
+    loadProducts();
+  } catch (err) {
+    toast('Could not delete — ' + err.message);
+  }
+};
+</script>
+</body>
+</html>

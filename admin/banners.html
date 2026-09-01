@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Home Page CMS — Admin</title>
+<link rel="stylesheet" href="../assets/css/style.css">
+<link rel="stylesheet" href="assets/admin.css">
+</head>
+<body>
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <span class="logo">Loops<span class="halo-dot"> of Love</span></span>
+    <nav class="admin-nav" id="admin-nav"></nav>
+    <div class="signout"><button id="signout-btn">Sign out</button></div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h1>Home Page CMS</h1>
+      <button class="btn btn-gold btn-sm" id="new-slide-btn">+ New slide</button>
+    </div>
+
+    <div class="panel">
+      <h2>Hero banner slides</h2>
+      <p class="panel-desc">The home page hero rotates through every <strong>active</strong> slide below, in order. Add as many as you like — one slide just won't rotate.</p>
+      <table class="admin-table">
+        <thead><tr><th>Image</th><th>Headline</th><th>Order</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody id="banners-body"></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- Modal -->
+<div class="modal-backdrop" id="modal-backdrop">
+  <div class="modal" id="slideModal">
+    <h3>New slide</h3>
+    
+    <div class="field">
+      <label>EYEBROW TAG (OPTIONAL)</label>
+      <input type="text" id="eyebrow" placeholder="Customize Your Own">
+    </div>
+    
+    <div class="field">
+      <label>HEADLINE (OPTIONAL, HTML ALLOWED)</label>
+      <input type="text" id="headline" placeholder="Loop in a little <em>love</em> today.">
+    </div>
+    
+    <div class="field">
+      <label>SUBTITLE (OPTIONAL)</label>
+      <textarea id="subtitle" placeholder="Handmade, customizable accessories..."></textarea>
+    </div>
+    
+    <div class="field">
+      <label>SLIDE IMAGE UPLOAD (REQUIRED)</label>
+      <input type="file" id="slide_image_file" accept="image/*" required style="padding-top: 9px;">
+    </div>
+    
+    <div class="field">
+      <label>ORDER (LOWER SHOWS FIRST)</label>
+      <input type="number" id="order" value="0">
+    </div>
+    
+    <div class="field">
+      <label>STATUS</label>
+      <select id="status">
+        <option value="Active">Active (in rotation)</option>
+        <option value="Draft">Draft (hidden)</option>
+      </select>
+    </div>
+    
+    <div style="margin-top: 24px; display: flex; gap: 12px;">
+      <button class="btn btn-gold" id="save-btn">Save slide</button>
+      <button class="btn" style="border-color: var(--admin-border); color: var(--admin-espresso);" id="cancel-btn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { requireAdmin, renderSidebar, api, toast } from './assets/js/admin.js';
+
+let allBanners = [];
+const backdrop = document.getElementById('modal-backdrop');
+
+// 1. WAKE UP THE BUTTONS IMMEDIATELY (Don't wait for the server!)
+document.getElementById('new-slide-btn').onclick = () => {
+  document.getElementById('eyebrow').value = '';
+  document.getElementById('headline').value = '';
+  document.getElementById('subtitle').value = '';
+  document.getElementById('slide_image_file').value = '';
+  document.getElementById('order').value = '0';
+  document.getElementById('status').value = 'Active';
+  backdrop.classList.add('show');
+};
+
+document.getElementById('cancel-btn').onclick = () => {
+  backdrop.classList.remove('show');
+};
+
+// 2. SHOW A LOADING MESSAGE IN THE TABLE
+document.getElementById('banners-body').innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 30px; color: var(--admin-espresso);">Waking up server and loading data...</td></tr>`;
+
+// 3. START FETCHING DATA IN THE BACKGROUND
+async function initPage() {
+  try {
+    const admin = await requireAdmin();
+    if (admin) {
+      renderSidebar('banners.html', admin.email || 'Admin');
+      await loadBanners();
+    }
+  } catch (err) {
+    toast('Connection error. Please refresh the page.');
+    console.error("Initialization error:", err);
+  }
+}
+
+async function loadBanners() {
+  try {
+    const { banners } = await api('admin?resource=banners');
+    allBanners = banners || [];
+    
+    document.getElementById('banners-body').innerHTML = allBanners.map(b => `
+      <tr>
+        <td><img style="width: 60px; height: 60px; object-fit: cover; border-radius: 6px; background: var(--admin-border);" src="${b.image_url || ''}" alt=""></td>
+        <td>${(b.title || '<em>No headline</em>').replace(/<[^>]+>/g, '')}</td>
+        <td>${b.sort_order || 0}</td>
+        <td>${b.active ? '<span class="pill pill-green">Active</span>' : '<span class="pill pill-gray">Hidden</span>'}</td>
+        <td><button class="btn btn-sm btn-danger delete-btn" data-id="${b.id}">Delete</button></td>
+      </tr>`).join('') || `<tr><td colspan="5" style="text-align: center; padding: 20px;">No slides yet — add your first one.</td></tr>`;
+
+    // Attach delete events
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+      btn.onclick = () => deleteSlide(btn.dataset.id);
+    });
+  } catch (err) {
+    document.getElementById('banners-body').innerHTML = `<tr><td colspan="5" style="text-align: center; color: red;">Failed to load data.</td></tr>`;
+    toast('Failed to load banners: ' + err.message);
+  }
+}
+
+// 4. SAVE SLIDE LOGIC
+document.getElementById('save-btn').onclick = async () => {
+  const saveBtn = document.getElementById('save-btn');
+  const fileInput = document.getElementById('slide_image_file');
+  const file = fileInput.files[0];
+
+  if (!file) {
+    toast("Please upload an image for the slide!");
+    return;
+  }
+
+  saveBtn.innerText = 'Uploading...';
+  saveBtn.disabled = true;
+
+  try {
+    const imageBase64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = error => reject(error);
+    });
+
+    const payload = {
+      eyebrow: document.getElementById('eyebrow').value.trim(),
+      headline: document.getElementById('headline').value.trim(),
+      subtitle: document.getElementById('subtitle').value.trim(),
+      image_base64: imageBase64,
+      order: parseInt(document.getElementById('order').value) || 0,
+      status: document.getElementById('status').value
+    };
+
+    await api('admin?resource=banners', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+
+    toast("Slide successfully saved!");
+    backdrop.classList.remove('show');
+    
+    // Show loading state while refreshing table
+    document.getElementById('banners-body').innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 20px;">Refreshing...</td></tr>`;
+    await loadBanners();
+    
+  } catch (err) {
+    toast("Error: " + err.message);
+  } finally {
+    saveBtn.innerText = 'Save slide';
+    saveBtn.disabled = false;
+  }
+};
+
+// 5. DELETE SLIDE LOGIC
+async function deleteSlide(id) {
+  if (!confirm('Are you sure you want to delete this slide permanently?')) return;
+  
+  try {
+    document.getElementById('banners-body').innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 20px;">Deleting...</td></tr>`;
+    await api('admin?resource=banners', { 
+      method: 'DELETE', 
+      body: JSON.stringify({ id }) 
+    });
+    toast('Slide deleted');
+    await loadBanners();
+  } catch (err) {
+    toast('Could not delete — ' + err.message);
+    await loadBanners();
+  }
+}
+
+// Start everything up!
+initPage();
+</script>
+</body>
+</html>

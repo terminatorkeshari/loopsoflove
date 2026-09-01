@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login — Loops of Love</title>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<div class="announce-bar" id="announce-bar"></div>
+
+<header class="site-header">
+  <div class="wrap">
+    <a href="index.html" class="logo">Loops of Love<span class="halo-dot">.</span></a>
+    <nav class="main-nav">
+      <a href="index.html">Home</a>
+      <a href="index.html#shop">Shop</a>
+      <a href="index.html#about">About</a>
+      <a href="index.html#contact">Contact</a>
+    </nav>
+    <div class="nav-icons">
+      <a href="login.html" aria-label="Account"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.5-7 8-7s8 3 8 7"/></svg></a>
+      <a href="cart.html" aria-label="Cart"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h2l1.5 11h11L20 8H7"/><circle cx="10" cy="20" r="1"/><circle cx="17" cy="20" r="1"/></svg><span class="cart-count" data-cart-count>0</span></a>
+    </div>
+  </div>
+</header>
+
+<div class="form-card">
+  <div class="tabs">
+    <button type="button" id="tab-login" class="active">Log in</button>
+    <button type="button" id="tab-signup">Create account</button>
+  </div>
+
+  <div id="form-error" class="form-error"></div>
+
+  <!-- LOGIN -->
+  <form id="login-form">
+    <h2>Welcome back</h2>
+    <p class="form-sub">Log in to place your order</p>
+    <div class="field"><label>Mobile number</label><input type="tel" id="login-phone" required placeholder="98765 43210"></div>
+    <div class="field"><label>Password</label><input type="password" id="login-password" required></div>
+    <button class="btn btn-gold btn-block" type="submit">Log in</button>
+  </form>
+
+  <!-- SIGNUP -->
+  <form id="signup-form" style="display:none;">
+    <h2>Create your account</h2>
+    <p class="form-sub">Just a moment — then straight to checkout</p>
+    <div class="field"><label>Full name</label><input type="text" id="signup-name" required></div>
+    <div class="field"><label>Mobile number</label><input type="tel" id="signup-phone" required placeholder="98765 43210"></div>
+    <div class="field"><label>Password</label><input type="password" id="signup-password" required minlength="6"></div>
+    <button class="btn btn-gold btn-block" type="submit">Create account</button>
+  </form>
+</div>
+
+<script type="module">
+import { signUpCustomer, logInCustomer, renderAnnouncementBar } from './assets/js/app.js';
+
+renderAnnouncementBar();
+
+const params = new URLSearchParams(location.search);
+const next = params.get('next') || 'checkout.html';
+
+const tabLogin = document.getElementById('tab-login');
+const tabSignup = document.getElementById('tab-signup');
+const loginForm = document.getElementById('login-form');
+const signupForm = document.getElementById('signup-form');
+const errorBox = document.getElementById('form-error');
+
+function showTab(which) {
+  errorBox.style.display = 'none';
+  if (which === 'login') {
+    tabLogin.classList.add('active'); tabSignup.classList.remove('active');
+    loginForm.style.display = 'block'; signupForm.style.display = 'none';
+  } else {
+    tabSignup.classList.add('active'); tabLogin.classList.remove('active');
+    signupForm.style.display = 'block'; loginForm.style.display = 'none';
+  }
+}
+tabLogin.onclick = () => showTab('login');
+tabSignup.onclick = () => showTab('signup');
+
+function showError(msg) {
+  errorBox.textContent = msg;
+  errorBox.style.display = 'block';
+}
+
+loginForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const phone = document.getElementById('login-phone').value.trim();
+  const password = document.getElementById('login-password').value;
+  try {
+    await logInCustomer(phone, password);
+    window.location.href = next;
+  } catch (err) {
+    showError(err.message || 'Incorrect mobile number or password.');
+  }
+});
+
+signupForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const full_name = document.getElementById('signup-name').value.trim();
+  const phone = document.getElementById('signup-phone').value.trim();
+  const password = document.getElementById('signup-password').value;
+
+  try {
+    await signUpCustomer(full_name, phone, password);
+    window.location.href = next;
+  } catch (err) {
+    showError(err.message || 'Something went wrong creating your account.');
+  }
+});
+</script>
+</body>
+</html>

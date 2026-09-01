@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Admin</title>
+<link rel="stylesheet" href="../assets/css/style.css">
+<link rel="stylesheet" href="assets/admin.css">
+</head>
+<body>
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <span class="logo">Loops<span class="halo-dot"> of Love</span></span>
+    <nav class="admin-nav" id="admin-nav"></nav>
+    <div class="signout"><button id="signout-btn">Sign out</button></div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h1>Dashboard</h1>
+      <span class="who" id="admin-who"></span>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-card"><div class="label">Orders today</div><div class="value" id="stat-orders-today">–</div></div>
+      <div class="stat-card"><div class="label">Total products</div><div class="value" id="stat-products">–</div></div>
+      <div class="stat-card"><div class="label">Low stock (≤3)</div><div class="value" id="stat-low-stock">–</div></div>
+      <div class="stat-card"><div class="label">Orders this week</div><div class="value" id="stat-orders-week">–</div></div>
+    </div>
+
+    <div class="panel">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <h2>Global Order Blocking</h2>
+          <p class="panel-desc">Emergency stop — instantly pause all new orders storewide.</p>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="block-toggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Recent orders</h2>
+      <p class="panel-desc">Latest 8 orders placed on the storefront.</p>
+      <table class="admin-table">
+        <thead><tr><th>Order #</th><th>Customer</th><th>Total</th><th>Status</th><th>Placed</th></tr></thead>
+        <tbody id="recent-orders"></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<script type="module">
+import { requireAdmin, renderSidebar, api, formatPrice, toast } from './assets/js/admin.js';
+
+const admin = await requireAdmin();
+if (admin) {
+  renderSidebar('dashboard.html', admin.email || 'Admin');
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  const weekAgo = new Date(Date.now() - 7*24*60*60*1000);
+
+  const { orders } = await api('admin?resource=orders');
+  const { products } = await api('admin?resource=products');
+
+  const ordersToday = (orders || []).filter(o => new Date(o.created_at) >= today).length;
+  const ordersWeek = (orders || []).filter(o => new Date(o.created_at) >= weekAgo).length;
+  const lowStock = (products || []).filter(p => p.stock <= 3).length;
+
+  document.getElementById('stat-orders-today').textContent = ordersToday;
+  document.getElementById('stat-orders-week').textContent = ordersWeek;
+  document.getElementById('stat-products').textContent = (products || []).length;
+  document.getElementById('stat-low-stock').textContent = lowStock;
+
+  document.getElementById('recent-orders').innerHTML = (orders || []).slice(0, 8).map(o => `
+    <tr>
+      <td>${o.order_number}</td>
+      <td>${o.customer_name}</td>
+      <td>${formatPrice(o.total)}</td>
+      <td><span class="pill pill-gray">${o.status}</span></td>
+      <td>${new Date(o.created_at).toLocaleDateString()}</td>
+    </tr>`).join('') || `<tr><td colspan="5">No orders yet.</td></tr>`;
+
+  const { settings } = await api('settings');
+  const blockToggle = document.getElementById('block-toggle');
+  blockToggle.checked = settings.block_orders === 'true';
+
+  blockToggle.addEventListener('change', async () => {
+    try {
+      await api('admin?resource=settings', { method: 'PUT', body: JSON.stringify({ key: 'block_orders', value: blockToggle.checked }) });
+      toast(blockToggle.checked ? 'Orders are now blocked storewide' : 'Orders re-enabled');
+    } catch {
+      toast('Could not update — try again');
+      blockToggle.checked = !blockToggle.checked;
+    }
+  });
+}
+</script>
+</body>
+</html>

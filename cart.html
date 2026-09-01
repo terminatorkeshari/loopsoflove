@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Cart — Loops of Love</title>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<div class="announce-bar" id="announce-bar"></div>
+
+<header class="site-header">
+  <div class="wrap">
+    <a href="index.html" class="logo">Loops of Love<span class="halo-dot">.</span></a>
+    <nav class="main-nav">
+      <a href="index.html">Home</a>
+      <a href="index.html#shop">Shop</a>
+      <a href="index.html#about">About</a>
+      <a href="index.html#contact">Contact</a>
+    </nav>
+    <div class="nav-icons">
+      <a href="login.html" aria-label="Account"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.5-7 8-7s8 3 8 7"/></svg></a>
+      <a href="cart.html" aria-label="Cart"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h2l1.5 11h11L20 8H7"/><circle cx="10" cy="20" r="1"/><circle cx="17" cy="20" r="1"/></svg><span class="cart-count" data-cart-count>0</span></a>
+    </div>
+  </div>
+</header>
+
+<div class="wrap" style="padding:60px 28px 100px;">
+  <h1 style="font-size:38px; margin-bottom:36px;">Your cart</h1>
+
+  <table class="table" id="cart-table" style="display:none;">
+    <thead><tr><th>Item</th><th>Price</th><th>Qty</th><th>Subtotal</th><th></th></tr></thead>
+    <tbody id="cart-body"></tbody>
+  </table>
+
+  <div class="summary-box" id="summary-box" style="display:none;">
+    <div class="summary-row total"><span>Total</span><span id="cart-total"></span></div>
+    <a href="checkout.html" class="btn btn-gold btn-block" style="margin-top:16px;">Proceed to checkout</a>
+  </div>
+
+  <div class="empty-state" id="cart-empty" style="display:none;">
+    <h3>Your cart is empty</h3>
+    <p><a href="index.html" style="color:var(--pink-deep);">Continue shopping →</a></p>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div>© <span id="year"></span> Loops of Love. All rights reserved.</div>
+    <div>Payment: Cash on Delivery</div>
+  </div>
+</footer>
+
+<script type="module">
+import { fetchProductsByIds, effectivePrice, formatPrice, getCart, setQty, removeFromCart, renderAnnouncementBar } from './assets/js/app.js';
+
+renderAnnouncementBar();
+
+document.getElementById('year').textContent = new Date().getFullYear();
+
+async function render() {
+  const cart = getCart();
+  if (cart.length === 0) {
+    document.getElementById('cart-empty').style.display = 'block';
+    return;
+  }
+
+  const ids = cart.map(i => i.product_id);
+  const products = await fetchProductsByIds(ids);
+
+  let total = 0;
+  const rows = cart.map(item => {
+    const p = products.find(p => p.id === item.product_id);
+    if (!p) return '';
+    const price = effectivePrice(p);
+    const qty = Math.min(item.qty, p.stock > 0 ? p.stock : item.qty);
+    const subtotal = price * qty;
+    total += subtotal;
+    return `
+      <tr>
+        <td><div class="line-item"><img src="${p.image_url || ''}" alt=""><span class="name">${p.name}</span></div></td>
+        <td>${formatPrice(price)}</td>
+        <td>
+          <div class="qty-box" style="display:inline-flex;">
+            <button type="button" data-action="dec" data-id="${p.id}" data-qty="${qty}">–</button>
+            <input type="text" value="${qty}" readonly style="width:36px;">
+            <button type="button" data-action="inc" data-id="${p.id}" data-qty="${qty}" data-stock="${p.stock}">+</button>
+          </div>
+        </td>
+        <td>${formatPrice(subtotal)}</td>
+        <td><a class="remove-link" data-action="remove" data-id="${p.id}" href="#">Remove</a></td>
+      </tr>`;
+  }).join('');
+
+  document.getElementById('cart-body').innerHTML = rows;
+  document.getElementById('cart-table').style.display = 'table';
+  document.getElementById('summary-box').style.display = 'block';
+  document.getElementById('cart-total').textContent = formatPrice(total);
+}
+
+document.getElementById('cart-body').addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-action]');
+  if (!btn) return;
+  e.preventDefault();
+  const id = btn.dataset.id;
+  if (btn.dataset.action === 'remove') removeFromCart(id);
+  if (btn.dataset.action === 'inc') {
+    const next = parseInt(btn.dataset.qty) + 1;
+    if (next <= parseInt(btn.dataset.stock || 99)) setQty(id, next);
+  }
+  if (btn.dataset.action === 'dec') setQty(id, parseInt(btn.dataset.qty) - 1);
+  render();
+});
+
+render();
+</script>
+</body>
+</html>
