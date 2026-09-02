@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const { getPool } = require('./_lib/db');
+const { getPool, ensureSchema } = require('./_lib/db');
 const { requireAdmin } = require('./_lib/supabase');
 const { uploadToCloudinary } = require('./_lib/cloudinary');
 
@@ -19,6 +19,7 @@ module.exports = async (req, res) => {
   if (resource === 'banners') {
     if (!(await requireAdmin(req))) return json(403, { error: 'Admin access required.' });
     const pool = getPool();
+    if (ensureSchema) await ensureSchema(pool);
 
     try {
       if (req.method === 'GET') {
@@ -56,8 +57,7 @@ module.exports = async (req, res) => {
         const font_size_preset = body.font_size_preset || 'lg';
         const animate_on_load = body.animate_on_load !== false;
 
-        await pool.query(
-          `INSERT INTO banners (
+        const insertSql = `INSERT INTO banners (
             id, eyebrow, title, subtitle, image_url, sort_order, active,
             preset, gradient_css, video_url, overlay_color, overlay_opacity,
             cta_text, cta_url, height_vh, text_align, font_size_preset, animate_on_load
@@ -65,13 +65,20 @@ module.exports = async (req, res) => {
             $1, $2, $3, $4, $5, $6, $7,
             $8, $9, $10, $11, $12,
             $13, $14, $15, $16, $17, $18
-          )`,
-          [
-            id, body.eyebrow || '', body.headline || '', body.subtitle || '', imageUrl || '', parseInt(body.order) || 0, body.status === 'Active',
-            preset, gradient_css, video_url, overlay_color, overlay_opacity,
-            cta_text, cta_url, height_vh, text_align, font_size_preset, animate_on_load
-          ]
-        );
+          )`;
+        const insertParams = [
+          id, body.eyebrow || '', body.headline || '', body.subtitle || '', imageUrl || '', parseInt(body.order) || 0, body.status === 'Active',
+          preset, gradient_css, video_url, overlay_color, overlay_opacity,
+          cta_text, cta_url, height_vh, text_align, font_size_preset, animate_on_load
+        ];
+
+        try {
+          await pool.query(insertSql, insertParams);
+        } catch (insertErr) {
+          // If a column is missing, run migration and retry once
+          if (ensureSchema) await ensureSchema(pool);
+          await pool.query(insertSql, insertParams);
+        }
 
         return json(200, { success: true, id, message: 'Slide saved!' });
       }

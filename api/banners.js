@@ -1,4 +1,4 @@
-const { getPool } = require('./_lib/db');
+const { getPool, ensureSchema } = require('./_lib/db');
 
 // GET /api/banners — public read, no auth required. Only returns active
 // slides, ordered for the homepage slideshow.
@@ -8,6 +8,7 @@ module.exports = async (req, res) => {
 
   try {
     const pool = getPool();
+    if (ensureSchema) await ensureSchema(pool);
     const { rows } = await pool.query(
       'SELECT * FROM banners WHERE active = true ORDER BY sort_order ASC'
     );
